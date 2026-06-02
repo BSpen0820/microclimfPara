@@ -301,6 +301,8 @@ runpointmodela<-function(climarrayr, tme, reqhgt = 0.05, dtm, vegp, soilc, matem
 #' @param sva optional SpatRaster object of the skyview factor. Calculated from the
 #' dtm in micro if not supplied, but cannot account for edge effects.
 #' @param method on of `R` or `Cpp` (see details)
+#' @param Dynreqhgt should reqhgt be static relative to ground surface or dynamically adjust with snow depth to be some
+#' constant distance relative to surface, default is to remain static relative to ground level (FALSE)
 #' @return If `reqhgt > 0`:
 #' \describe{
 #'   \item{Tz}{Air temperatures at height `reqhgt` (deg C)}
@@ -376,15 +378,15 @@ runpointmodela<-function(climarrayr, tme, reqhgt = 0.05, dtm, vegp, soilc, matem
 runmicro <- function(micropoint, reqhgt, vegp, soilc, dtm, dtmc = NA, altcorrect = 0,
                      snow = FALSE, snowmod = NA, runchecks = TRUE, pai_a = NA, tfact = 1.5,
                      out = rep(TRUE, 10), slr = NA, apr = NA, hor = NA, twi = NA,
-                     wsa = NA, svf = NA, method = "Cpp") {
+                     wsa = NA, svf = NA, method = "Cpp", Dynreqhgt = FALSE) {
   if (snow) { # data frame input
     if (class(micropoint) == "micropoint") { # data.frame climate input
       mout<-.runmicrosnow1(micropoint,reqhgt,vegp,soilc,dtm,snowmod,runchecks,pai_a,
-                           tfact,out,slr,apr,hor,twi,wsa,svf)
+                           tfact,out,slr,apr,hor,twi,wsa,svf,Dynreqhgt)
     } else {  # array climate input
       if (class(dtmc) == "logical") stop("Require dtmc. Please provide\n")
       mout<-.runmicrosnow2(micropoint,reqhgt,vegp,soilc,dtm,dtmc,snowmod,altcorrect,
-                           runchecks,pai_a,tfact,out,slr,apr,hor,twi,wsa,svf)
+                           runchecks,pai_a,tfact,out,slr,apr,hor,twi,wsa,svf,Dynreqhgt)
     }
   } else {
     if (class(micropoint) != "micropoint"  &  class(dtmc) == "logical")  stop("Require dtmc. Please provide\n")

@@ -7,7 +7,7 @@
 #include <string>
 #include <stdexcept>
 #include <tuple>
-#include <cfloat> 
+#include <cfloat>
 #include <numeric>
 #include <queue>
 using namespace Rcpp;
@@ -149,7 +149,7 @@ tsdifstruct twostreamdifCpp(double pait, double x, double lref, double ltra, dou
     params.S1 = std::exp(-params.h * pait);
     params.u1 = params.a + params.gma * (1.0 - 1.0 / gref);
     double u2 = params.a + params.gma * (1.0 - gref);
-    params.D1 = (params.a + params.gma + params.h) * (params.u1 - params.h) * 
+    params.D1 = (params.a + params.gma + params.h) * (params.u1 - params.h) *
         1.0 / params.S1 - (params.a + params.gma - params.h) * (params.u1 + params.h) * params.S1;
     params.D2 = (u2 + params.h) * 1.0 / params.S1 - (u2 - params.h) * params.S1;
     // Calculate parameters
@@ -157,7 +157,7 @@ tsdifstruct twostreamdifCpp(double pait, double x, double lref, double ltra, dou
     params.p2 = (-params.gma * params.S1 / params.D1) * (params.u1 + params.h);
     params.p3 = (1.0 / (params.D2 * params.S1)) * (u2 + params.h);
     params.p4 = (-params.S1 / params.D2) * (u2 - params.h);
-    // Define and return output 
+    // Define and return output
     return params;
 }
 // ** Calculates parameters for direct radiation using two-stream model ** //
@@ -216,7 +216,7 @@ radmodel RadswabsCpp(double pai, double x, double lref, double ltra, double clum
                 // Calculate canopy extinction coefficient
                 double cosz = std::cos(solp.zenr);
                 kstruct kp = cankCpp(solp.zenr, x, si);
-                // Calculate two-stream parameters (direct)  
+                // Calculate two-stream parameters (direct)
                 tsdirstruct tspdir = twostreamdirCpp(pait, tspdif.om, tspdif.a, tspdif.gma, tspdif.J, tspdif.del, tspdif.h, gref,
                     kp.kd, tspdif.u1, tspdif.S1, tspdif.D1, tspdif.D2);
                 // Calculate beam normalisations
@@ -343,7 +343,7 @@ double dpsihCpp(double ze)
     if (psih > 3.0) psih = 3.0;
     return psih;
 }
-// **  Calculate diabatic influencing factor for heat ** //  
+// **  Calculate diabatic influencing factor for heat ** //
 double dphihCpp(double ze)
 {
     double phih;
@@ -360,7 +360,7 @@ double dphihCpp(double ze)
     if (phih < 0.5) phih = 0.5;
     return phih;
 }
-// **  Calculate free convection ** //  
+// **  Calculate free convection ** //
 double gfreeCpp(double leafd, double H)
 {
     double d = 0.71 * leafd;
@@ -369,7 +369,7 @@ double gfreeCpp(double leafd, double H)
     if (gha < 0.1) gha = 0.1;
     return gha;
 }
-// **  Calculate molar conductance above canopy ** //  
+// **  Calculate molar conductance above canopy ** //
 double gturbCpp(double uf, double d, double zm, double zref, double ph, double psi_h, double gmin)
 {
     double z0 = 0.2 * zm + d; // heat exchange surface height
@@ -488,7 +488,7 @@ double satvapCpp(double tc)
     }
     return es;
 }
-// **  Dewpoint temperature ** // 
+// **  Dewpoint temperature ** //
 // [[Rcpp::export]]
 double dewpointCpp(double ea) {
     return 243.5 * std::log(ea / 0.6112) /
@@ -512,7 +512,7 @@ double PenmanMonteithCpp(double Rabs, double gHa, double gV, double tc, double t
     double Ts = tc + ((Rabs - Rema - la * (gV / pk) * Da * erh - G) / (cp * (gHa + gR) + la * (gV / pk) * De * erh));
     return Ts;
 }
-// **  Function to compute daily from hourly - each value replicated 24 times ** // 
+// **  Function to compute daily from hourly - each value replicated 24 times ** //
 // [[Rcpp::export]]
 std::vector<double> hourtodayCpp(std::vector<double> hourly, std::string stat, bool rephour = true) {
     int numDays = hourly.size() / 24;
@@ -550,14 +550,14 @@ std::vector<double> hourtodayCpp(std::vector<double> hourly, std::string stat, b
             for (int j = 0; j < 24; ++j) {
                 daily[i * 24 + j] = dailyStat;
             }
-        } 
+        }
         else {
             daily[i] = dailyStat;
         }
     }
     return daily;
 }
-// **  Function to compute rolling mean temp ** // 
+// **  Function to compute rolling mean temp ** //
 std::vector<double> maCpp(std::vector<double> x, int n) {
     std::vector<double> y(x.size());
     int m = x.size();
@@ -570,7 +570,7 @@ std::vector<double> maCpp(std::vector<double> x, int n) {
     }
     return y;
 }
-// **  Function to compute rolling mean yearly ** // 
+// **  Function to compute rolling mean yearly ** //
 std::vector<double> mayCpp(std::vector<double> x) {
     // Calculate daily mean
     int numDays = x.size() / 24;
@@ -593,7 +593,7 @@ std::vector<double> mayCpp(std::vector<double> x) {
     return z;
 }
 // **  Microclimf function to compute rolling mean yearly ** //
-// [[Rcpp::export]]    
+// [[Rcpp::export]]
 std::vector<double> manCpp(std::vector<double> x, int n) {
     std::vector<double> z(x.size());
     // Calculate rolling mean if n < 48
@@ -637,7 +637,7 @@ soilstruct soilpfun(double Vm, double Vq, double Mc, double rho)
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // ************************************** Big leaf point model here ********************************************************* //
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// **  Function to compute ground heat flux ** //  
+// **  Function to compute ground heat flux ** //
 Gmodel GFluxCpp(std::vector<double> Tg, std::vector<double> soilm, double rho, double Vm, double Vq, double Mc,
     std::vector<double> Gmax, std::vector<double> Gmin, int iter, bool yearG = true) {
     // Time invariant variables
@@ -1084,7 +1084,7 @@ tirstruct twostreamdif(double pai, double paia, double x, double lref, double lt
 }
 // ** Run two-stream radiation model ** //
 radmodel2 twostreamCpp(double pai, double clump, double gref, double svfa, double si,
-    double tc, double Rsw, double Rdif, double Rlw, solmodel solp, kstruct kp, 
+    double tc, double Rsw, double Rdif, double Rlw, solmodel solp, kstruct kp,
     tsdirstruct tspdir, tirstruct tir)
 {
     radmodel2 out;
@@ -1188,7 +1188,7 @@ tiwstruct windtiCpp(double h, double pai)
 // ** Calculate wind speed (single value) ** //
 windmodel windCpp(double reqhgt, double zref, double h, double pai, double uref, double umu, double ws, tiwstruct tiw)
 {
-    
+
     windmodel out;
     if (Rcpp::NumericVector::is_na(ws)) ws = 1.0;
     if (ws < 0.05) ws = 0.05;
@@ -1259,7 +1259,7 @@ soilkstruct soilcondCpp(double rho, double soilm, soilstruct sp)
     return out;
 }
 // Calculate soil surface temperature assuming G to be zero
-soilmodelG0 soiltempG0(double tc, double es, double ea, double pk, double radGsw, double radGlw, 
+soilmodelG0 soiltempG0(double tc, double es, double ea, double pk, double radGsw, double radGlw,
     double tdew, double gHa, double soilm, double mxtc, soilpstruct soilparams)
 {
     soilmodelG0 out;
@@ -1275,7 +1275,7 @@ soilmodelG0 soiltempG0(double tc, double es, double ea, double pk, double radGsw
 }
 // ** Calculate ground surface temperature using hourly data  ** //
 soilmodel soiltemp_hrCpp(double tc, double es, double ea, double pk, double radabs, double surfwet, double tdew,
-    double gHa, double soilm, double mxtc, double Gp, double dtr, double dtrp, double muGp, double kp, 
+    double gHa, double soilm, double mxtc, double Gp, double dtr, double dtrp, double muGp, double kp,
     double Rdmx, soilstruct sp, soilpstruct soilparams)
 {
     // Diurnal temperature range in soil temperature
@@ -1313,7 +1313,7 @@ abovecanstruct TVabove(double reqhgt, double zref, double h, double d, double zm
 }
 // Estimate minimum conductance
 // [[Rcpp::export]]
-double mincondCpp(double leafabs, double gs, double tc, double leafd) 
+double mincondCpp(double leafabs, double gs, double tc, double leafd)
 {
     // Estimated Rnet
     double Rnet = leafabs - 0.97 * sb * radem(tc);
@@ -1331,7 +1331,7 @@ double mincondCpp(double leafabs, double gs, double tc, double leafd)
 }
 // Calculate leaf temperature and fluxes
 leaftempstruct leaftemp(double Tcan, double Tg, double tc, double mxtc, double pk, double ea, double es, double uz, double tdew,
-    double surfwet, double radLsw, double Rddown, double Rbdown, double Rlw, double pai, double paia, double leafd, 
+    double surfwet, double radLsw, double Rddown, double Rbdown, double Rlw, double pai, double paia, double leafd,
     double gsmax, double PARabs, double theta, double Smax, double psi_e, double soilb, stompstruct stomp)
 {
     leaftempstruct out;
@@ -1408,9 +1408,9 @@ double TVbelow(double zref, double z, double d, double h, double pai, double uf,
     return near + farg;
 }
 // Calculate temperature or vapour pressure above ground
-abovemodel TVaboveground(double reqhgt, double zref, double tc, double pk, double ea, double es, double tdew, 
+abovemodel TVaboveground(double reqhgt, double zref, double tc, double pk, double ea, double es, double tdew,
     double Rsw, double Rdif, double Rlw, double soilm, double hgt, double pai, double paia, double vegx, double leafd, double leafden,
-    double Smin, double Smax, double psi_e, double soilb, double gsmax, double mxtc, stompstruct stomp, tirstruct tir, radmodel2 rvars, 
+    double Smin, double Smax, double psi_e, double soilb, double gsmax, double mxtc, stompstruct stomp, tirstruct tir, radmodel2 rvars,
     tiwstruct tiw, windmodel wvars, soilmodel Gvars)
 {
     abovemodel out;
@@ -2225,7 +2225,7 @@ List runmicro1Cpp(DataFrame obstime, DataFrame climdata, DataFrame pointm, List 
                         double soild = soildCpp(soilmp[k], Smin(i, j), Smax(i, j), tadd(i, j));
                         soilmday[hr] = soild;
                         if (out[3]) soilm[idx] = soild;
-                        // Calculate radiation 
+                        // Calculate radiation
                         solp.zend = zend[k];
                         solp.zenr = zenr[k];
                         kstruct kpp = cankCpp(zenr[k], x(i, j), si);
@@ -2507,7 +2507,7 @@ List runmicro2Cpp(DataFrame obstime, List climdata, List pointm, List vegp, List
                         double soild = soildCpp(soilmp[idx], Smin(i, j), Smax(i, j), tadd(i, j));
                         soilmday[hr] = soild;
                         if (out[3]) soilm[idx] = soild;
-                        // Calculate radiation 
+                        // Calculate radiation
                         kstruct kpp = cankCpp(solp.zenr, x(i, j), si);
                         tsdirstruct tspdir = twostreamdirCpp(tir.pait, tir.om, tir.a, tir.gma, tir.J, tir.del, tir.h,
                             gref(i, j), kpp.kd, tir.u1, tir.S1, tir.D1, tir.D2);
@@ -2810,7 +2810,7 @@ List runmicro3Cpp(DataFrame dfsel, DataFrame obstime, DataFrame climdata, DataFr
                             double soild = soildCpp(soilmp[k], Smin(i, j), Smax(i, j), tadd(i, j));
                             soilmday[hr] = soild;
                             if (out[3]) soilm[idx] = soild;
-                            // Calculate radiation 
+                            // Calculate radiation
                             solp.zend = zend[k];
                             solp.zenr = zenr[k];
                             kstruct kpp = cankCpp(zenr[k], x[idxl], si);
@@ -3107,7 +3107,7 @@ List runmicro4Cpp(DataFrame dfsel, DataFrame obstime, List climdata, List pointm
                             double soild = soildCpp(soilmp[idx], Smin(i, j), Smax(i, j), tadd(i, j));
                             soilmday[hr] = soild;
                             if (out[3]) soilm[idx] = soild;
-                            // Calculate radiation 
+                            // Calculate radiation
                             kstruct kpp = cankCpp(solp.zenr, x[idxl], si);
                             tsdirstruct tspdir = twostreamdirCpp(tir.pait, tir.om, tir.a, tir.gma, tir.J, tir.del, tir.h,
                                 gref(i, j), kpp.kd, tir.u1, tir.S1, tir.D1, tir.D2);
@@ -3164,8 +3164,8 @@ List runmicro4Cpp(DataFrame dfsel, DataFrame obstime, List climdata, List pointm
                                 wvars.gHa = gHa[hr];
                                 double reqhgt2 = reqhgt;
                                 if (reqhgt2 < 0.00001) reqhgt2 = 0.00001;
-                                abovemodel tv = TVaboveground(reqhgt2, zref, tc[idx], pk[idx], ea[idx], es[idx], tdew[idx], Rsw[idx], 
-                                    Rdif[idx], lwdown[idx], soilmday[hr], hgt[idxl], pai[idxl], paia[idxl], x[idxl], leafd[idxl], 
+                                abovemodel tv = TVaboveground(reqhgt2, zref, tc[idx], pk[idx], ea[idx], es[idx], tdew[idx], Rsw[idx],
+                                    Rdif[idx], lwdown[idx], soilmday[hr], hgt[idxl], pai[idxl], paia[idxl], x[idxl], leafd[idxl],
                                     leafden[idxl], Smin(i, j), Smax(i, j), Psie(i, j), soilb(i, j), gsmax[idxl], mxtc, stomp, tir, rvars,
                                     tiw, wvars, Gvars);
                                 // Return outputs
@@ -3454,7 +3454,7 @@ NumericMatrix bioclimfill(int rows, int cols)
     return bio;
 }
 // Extract bioclim
-List runbioclimCpp(NumericVector Tz, NumericVector soilm, std::vector<bool> out, 
+List runbioclimCpp(NumericVector Tz, NumericVector soilm, std::vector<bool> out,
     IntegerVector wetq, IntegerVector dryq, IntegerVector hotq, IntegerVector colq)
 {
     // Get dims
@@ -3563,7 +3563,7 @@ List runbioclimCpp(NumericVector Tz, NumericVector soilm, std::vector<bool> out,
 List runbioclim1Cpp(DataFrame obstime, DataFrame climdata, DataFrame pointm, List vegp, List soilc,
     double reqhgt, double zref, double lat, double lon, double Sminp, double Smaxp, double tfact,
     double mat, std::vector<bool> out, IntegerVector wetq, IntegerVector dryq, IntegerVector hotq,
-    IntegerVector colq, bool air) 
+    IntegerVector colq, bool air)
 {
     std::vector<bool> outm;
     if (air) {
@@ -3704,7 +3704,7 @@ List runbioclim4Cpp(DataFrame obstime, List climdata, List pointm, List vegp,
 // Function to calculate canopy interception of snow
 // ** h = canopy height (m)
 // ** pai = plant area index (dimensionless)
-// ** snowdepth = snow depth (m) 
+// ** snowdepth = snow depth (m)
 // ** uf = wind friction velocity (m/s)
 // ** prec = hourly snowfall (mm)
 // ** tc = air temperature (deg C)
@@ -3900,7 +3900,7 @@ snowmodpoint snowoneB(obspoint obstime, climpoint clim, vegpoint vegp, snowpoint
         out.mRc = 0.0125 * clim.tc * clim.prec / 1000;
     }
     // ******* Calculate mass balance of snowpack (ground only) ******
-    // Sublimation 
+    // Sublimation
     if (out.Tg < 0.0) {
         la = 51078.69 - 4.338 * out.Tg - 0.06367 * out.Tg * out.Tg;
     }
@@ -3970,7 +3970,7 @@ snowmodpoint snowoneB(obspoint obstime, climpoint clim, vegpoint vegp, snowpoint
     out.Tcp = Tcp;
     return out;
 }
-// **  Function to compute rate of heat storage by snow ** //  
+// **  Function to compute rate of heat storage by snow ** //
 NumericVector GFluxCppsnow(NumericVector snowt, NumericVector snowden)
 {
     // Initalise variables that need retaining
@@ -4332,7 +4332,7 @@ List gridmodelsnow1(DataFrame obstime, DataFrame climdata, DataFrame pointm, Lis
                 double sdepgp = isnowdg(i, j);
                 meltc(i, j) = 0.0;
                 for (int k = 0; k < tsteps; ++k) {
-                    int idx = i + rows * j + cols * rows * k; 
+                    int idx = i + rows * j + cols * rows * k;
                     int snowtest = 0; // whether to run snow model
                     if (sdepcp > 0.0) snowtest = 1;
                     if (tc[k] < 2.0 && prec[k] > 0.0) snowtest = 1;
@@ -4501,7 +4501,7 @@ List gridmodelsnow2(DataFrame obstime, List climdata, List pointm, List vegp,
         for (int j = 0; j < cols; ++j) {
             double val = hgt(i, j);
             if (!Rcpp::NumericMatrix::is_na(val)) {
-                // Calculate ground heat flux 
+                // Calculate ground heat flux
                 NumericVector Rnet(tsteps);
                 NumericVector precv(tsteps);
                 for (int k = 0; k < tsteps; ++k) {
@@ -4736,8 +4736,8 @@ NumericMatrix meanDsnow(NumericVector snowden)
     return meanD;
 }
 // Run full model as point (snow)
-snowmicro snowabovepoint(double reqhgt, double zref, double tc, double relhum, double pk, double u2, 
-    double Rsw, double Rdif, double Rlw, 
+snowmicro snowabovepoint(double reqhgt, double zref, double tc, double relhum, double pk, double u2,
+    double Rsw, double Rdif, double Rlw,
     double hgt, double pai, double paia, double leafd, double clump, double ltra, double leafden,
     solmodel solp, double si, double svfa, int shadowmask, double ws, double umu, double mxtc, snowpoint2 snowp)
 {
@@ -4891,7 +4891,7 @@ double belowpointsnow(double reqhgt, double meanD, double snowtempg, double Tzd,
 }
 // snow microclimate model - data.frame climate
 // [[Rcpp::export]]
-List gridmicrosnow1(double reqhgt, DataFrame obstime, DataFrame climdata, List snowm, List micro, List vegp, List other,
+List gridmicrosnow1(double reqhgt, bool Dynreqhgt, DataFrame obstime, DataFrame climdata, List snowm, List micro, List vegp, List other,
     double mat, std::vector<bool> out) {
     // Extract obstime
     IntegerVector year = obstime["year"];
@@ -4992,8 +4992,13 @@ List gridmicrosnow1(double reqhgt, DataFrame obstime, DataFrame climdata, List s
                     // check whether to run model
                     if (swe[idx] > 0.0) {
                         // Calculate adjusted reqhgt
-                        double reqhgts = reqhgt - sdepg[idx];
-                        if (reqhgts >= 0.0) {
+                          double reqhgts;
+                          if (Dynreqhgt) {
+                            reqhgts = reqhgt;
+                          } else {
+                            reqhgts = reqhgt - sdepg[idx];
+                          }
+                          if (reqhgts >= 0.0) {
                             // Calculate shadowmask
                             int shadowmask = 1;
                             double ha = hor[sindex[k] * rows * cols + j * rows + i];
@@ -5007,7 +5012,7 @@ List gridmicrosnow1(double reqhgt, DataFrame obstime, DataFrame climdata, List s
                             solmodel solp; solp.zend = zend[k]; solp.zenr = zenr[k]; solp.azid = azid[k]; solp.azir = azir[k];
                             double sdepc = swe[idx] / sden[idx];
                             snowpoint2 snowp; snowp.snowtempg = snowtempg[idx]; snowp.snowtempc = snowtempc[idx];
-                            snowp.sdepc = sdepc; snowp.sdepg = sdepg[idx]; snowp.sdenc = sden[idx]; 
+                            snowp.sdepc = sdepc; snowp.sdepg = sdepg[idx]; snowp.sdenc = sden[idx];
                             snowp.albc = salb[k]; snowp.albg = salb[k];
                             snowmicro apv = snowabovepoint(reqhgts, zref, tc[k], rh[k], pk[k], u2[k], Rsw[k], Rdif[k], Rlw[k],
                                 hgt(i, j), pai(i, j), paia(i, j), leafd(i, j), clump(i, j), ltra(i, j), leafden(i, j),
@@ -5056,7 +5061,7 @@ List gridmicrosnow1(double reqhgt, DataFrame obstime, DataFrame climdata, List s
 }
 // snow microclimate model -array climate
 // [[Rcpp::export]]
-List gridmicrosnow2(double reqhgt, DataFrame obstime, List climdata, List snowm, List micro, List vegp, List other,
+List gridmicrosnow2(double reqhgt, bool Dynreqhgt, DataFrame obstime, List climdata, List snowm, List micro, List vegp, List other,
     double mat, std::vector<bool> out) {
     // Extract obstime
     IntegerVector year = obstime["year"];
@@ -5149,7 +5154,12 @@ List gridmicrosnow2(double reqhgt, DataFrame obstime, List climdata, List snowm,
                     // check whether to run model
                     if (swe[idx] > 0.0) {
                         // Calculate adjusted reqhgt
-                        double reqhgts = reqhgt - sdepg[idx];
+                          double reqhgts;
+                        if (Dynreqhgt) {
+                          reqhgts = reqhgt;
+                        } else {
+                          reqhgts = reqhgt - sdepg[idx];
+                        }
                         if (reqhgts >= 0.0) {
                             solmodel solp = solpositionCpp(lats(i, j), lons(i, j), year[k], month[k], day[k], hour[k]);
                             int sindex = static_cast<int>(std::round(solp.azid / 15)) % 24;
@@ -5448,7 +5458,7 @@ NumericMatrix canintfrac(NumericMatrix hgt, NumericMatrix pai, double uf,
     }
     return frac;
 }
-// Calculate melt mu - this function derives a temperature melt factor based on sky view 
+// Calculate melt mu - this function derives a temperature melt factor based on sky view
 // for all temperatures that exceed zero
 // [[Rcpp::export]]
 NumericMatrix meltmu(NumericMatrix skyview, NumericVector stemp, NumericVector tc)
@@ -5717,7 +5727,7 @@ NumericMatrix find_gref(NumericMatrix lref, NumericMatrix pai,
 }
 // Fill NAs in raster using nearest-neighbour method
 // [[Rcpp::export]]
-NumericMatrix fill_naCpp(NumericMatrix m, NumericMatrix mask) 
+NumericMatrix fill_naCpp(NumericMatrix m, NumericMatrix mask)
 {
     // Get dimensions
     int nrow = m.nrow();
@@ -5833,7 +5843,7 @@ DataFrame microclimatemodel_wrapper(DataFrame obstime, DataFrame climdata, List 
     // Extract from Bigleaf model
     NumericVector varTg = BLout["Tg"];
     NumericVector G = BLout["G"];
-    NumericVector uf = BLout["uf"]; 
+    NumericVector uf = BLout["uf"];
     double dp = 0.0;
     double zmp = 0.0;
     if (reqhgt >= 0) {

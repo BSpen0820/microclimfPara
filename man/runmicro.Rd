@@ -24,7 +24,8 @@ runmicro(
   twi = NA,
   wsa = NA,
   svf = NA,
-  method = "Cpp"
+  method = "Cpp",
+  Dynreqhgt = FALSE
 )
 }
 \arguments{
@@ -80,6 +81,9 @@ Calculated from the dtm in micro if not supplied, , but edge effects not account
 Calculated from the dtm in micro if not supplied, , but edge effects not accounted for.}
 
 \item{method}{on of `R` or `Cpp` (see details)}
+
+\item{Dynreqhgt}{should reqhgt be static relative to ground surface or dynamically adjust with snow depth to be some
+constant distance relative to surface, default is to remain static relative to ground level (FALSE)}
 
 \item{sva}{optional SpatRaster object of the skyview factor. Calculated from the
 dtm in micro if not supplied, but cannot account for edge effects.}

@@ -1,10 +1,10 @@
 Package: microclimf
 Type: Package
-Title: Fast above, below or within canopy gridded microclimate modelling with R
-Version: 2.0.0
+Title: Modified Microclimf: Fast above, below or within canopy gridded microclimate modelling with R
+Version: 2.0.1
 Authors@R: c(
-    person("Ilya", "Maclean", email = "i.m.d.maclean@exeter.ac.uk", role = "cre"))
-Maintainer: Ilya M. D. Maclean <i.m.d.maclean@exeter.ac.uk>
+    person("Bryan", "Spencer", email = "bspencer@uidaho.edu", role = "cre"))
+Maintainer: B. D. Spencer <bspencer@uidaho.edu>
 Description: The functions in the microclimf package contain tools for 
     fast modelling of the mechanistic processes that govern below or above canopy
     microclimate on gridded data. It builds on the microclima and microclimc packages, but 
@@ -18,7 +18,6 @@ Description: The functions in the microclimf package contain tools for
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
 LinkingTo: Rcpp 
 Imports: abind,
   ncdf4,
@@ -35,8 +34,7 @@ Suggests:
     plotly,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
-URL: https://github.com/ilyamaclean/microclimf
-BugReports: http://github.com/microclimf/issues
 Depends: 
     R (>= 2.10)
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0

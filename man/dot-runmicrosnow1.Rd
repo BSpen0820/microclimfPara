@@ -20,7 +20,8 @@
   hor = NA,
   twi = NA,
   wsa = NA,
-  svf = NA
+  svf = NA,
+  Dynreqhgt = FALSE
 )
 }
 \description{

@@ -3407,7 +3407,7 @@ flowacc<-function (dtm, basins = NA) {
     other$hor<-array(NA,dim=c(dim(dtm)[1:2],24))
     for (i in 1:24) other$hor[,,i]<-.horizon(dtm,(i-1)*15)
   } else other$hor<-hor
-  if (class(svf)  == "logical") {
+  if (class(svf)[1]  == "logical") {
     msl<-tan(apply(atan(other$hor),c(1,2),mean))
     other$skyview<-0.5*cos(2*msl)+0.5
   } else other$skyview<-.is(svf)
@@ -3542,7 +3542,7 @@ flowacc<-function (dtm, basins = NA) {
     other$hor<-array(NA,dim=c(dim(dtm)[1:2],24))
     for (i in 1:24) other$hor[,,i]<-.horizon(dtm,(i-1)*15)
   } else other$hor<-hor
-  if (class(svf)  == "logical") {
+  if (class(svf)[1]  == "logical") {
     msl<-tan(apply(atan(other$hor),c(1,2),mean))
     other$skyview<-0.5*cos(2*msl)+0.5
   } else other$skyview<-.is(svf)
@@ -3579,7 +3579,7 @@ flowacc<-function (dtm, basins = NA) {
 }
 #' Run microclimate grid model with snow (data.frame weather)
 .runmicrosnow1 <- function(micropoint,reqhgt,vegp,soilc,dtm,smod,runchecks=TRUE,pai_a=NA,tfact=1.5,
-                           out=rep(TRUE,10),slr=NA,apr=NA,hor=NA,twi=NA,wsa=NA,svf=NA)  {
+                           out=rep(TRUE,10),slr=NA,apr=NA,hor=NA,twi=NA,wsa=NA,svf=NA,Dynreqhgt=FALSE)  {
   pb <- utils::txtProgressBar(min = 0, max = 5, style = 3)
   if (class(dtm) == "PackedSpatRaster") dtm<-rast(dtm)
   # (1) Figure out snow and no snow days
@@ -3622,7 +3622,7 @@ flowacc<-function (dtm, basins = NA) {
       out <- rep(FALSE, 10)
       out[c(1, 4)] <- TRUE
     }
-    mouts<-gridmicrosnow1(reqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,micropoint$matemp,out)
+    mouts<-gridmicrosnow1(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,micropoint$matemp,out)
   }
   utils::setTxtProgressBar(pb,4)
   if (length(nosnowdays) == 0) {
@@ -3659,7 +3659,7 @@ flowacc<-function (dtm, basins = NA) {
 }
 #' Run microclimate grid model with snow (array weather)
 .runmicrosnow2 <- function(micropoint,reqhgt,vegp,soilc,dtm,dtmc,smod,altcorrect = 0,runchecks=TRUE,pai_a=NA,tfact=1.5,
-                           out=rep(TRUE,10),slr=NA,apr=NA,hor=NA,twi=NA,wsa=NA,svf=NA)  {
+                           out=rep(TRUE,10),slr=NA,apr=NA,hor=NA,twi=NA,wsa=NA,svf=NA,Dynreqhgt = FALSE)  {
   pb <- utils::txtProgressBar(min = 0, max = 6, style = 3)
   if (class(dtm) == "PackedSpatRaster") dtm<-rast(dtm)
   # (1) Figure out snow and no snow days
@@ -3708,7 +3708,7 @@ flowacc<-function (dtm, basins = NA) {
       out <- rep(FALSE, 10)
       out[c(1, 4)] <- TRUE
     }
-    mouts<-gridmicrosnow2(reqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,matemp,out)
+    mouts<-gridmicrosnow2(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,matemp,out)
     utils::setTxtProgressBar(pb,5)
   }
   if (length(nosnowdays) == 0) {

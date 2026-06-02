@@ -540,12 +540,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // gridmicrosnow1
-List gridmicrosnow1(double reqhgt, DataFrame obstime, DataFrame climdata, List snowm, List micro, List vegp, List other, double mat, std::vector<bool> out);
-RcppExport SEXP _microclimf_gridmicrosnow1(SEXP reqhgtSEXP, SEXP obstimeSEXP, SEXP climdataSEXP, SEXP snowmSEXP, SEXP microSEXP, SEXP vegpSEXP, SEXP otherSEXP, SEXP matSEXP, SEXP outSEXP) {
+List gridmicrosnow1(double reqhgt, bool Dynreqhgt, DataFrame obstime, DataFrame climdata, List snowm, List micro, List vegp, List other, double mat, std::vector<bool> out);
+RcppExport SEXP _microclimf_gridmicrosnow1(SEXP reqhgtSEXP, SEXP DynreqhgtSEXP, SEXP obstimeSEXP, SEXP climdataSEXP, SEXP snowmSEXP, SEXP microSEXP, SEXP vegpSEXP, SEXP otherSEXP, SEXP matSEXP, SEXP outSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type reqhgt(reqhgtSEXP);
+    Rcpp::traits::input_parameter< bool >::type Dynreqhgt(DynreqhgtSEXP);
     Rcpp::traits::input_parameter< DataFrame >::type obstime(obstimeSEXP);
     Rcpp::traits::input_parameter< DataFrame >::type climdata(climdataSEXP);
     Rcpp::traits::input_parameter< List >::type snowm(snowmSEXP);
@@ -554,17 +555,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type other(otherSEXP);
     Rcpp::traits::input_parameter< double >::type mat(matSEXP);
     Rcpp::traits::input_parameter< std::vector<bool> >::type out(outSEXP);
-    rcpp_result_gen = Rcpp::wrap(gridmicrosnow1(reqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out));
+    rcpp_result_gen = Rcpp::wrap(gridmicrosnow1(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out));
     return rcpp_result_gen;
 END_RCPP
 }
 // gridmicrosnow2
-List gridmicrosnow2(double reqhgt, DataFrame obstime, List climdata, List snowm, List micro, List vegp, List other, double mat, std::vector<bool> out);
-RcppExport SEXP _microclimf_gridmicrosnow2(SEXP reqhgtSEXP, SEXP obstimeSEXP, SEXP climdataSEXP, SEXP snowmSEXP, SEXP microSEXP, SEXP vegpSEXP, SEXP otherSEXP, SEXP matSEXP, SEXP outSEXP) {
+List gridmicrosnow2(double reqhgt, bool Dynreqhgt, DataFrame obstime, List climdata, List snowm, List micro, List vegp, List other, double mat, std::vector<bool> out);
+RcppExport SEXP _microclimf_gridmicrosnow2(SEXP reqhgtSEXP, SEXP DynreqhgtSEXP, SEXP obstimeSEXP, SEXP climdataSEXP, SEXP snowmSEXP, SEXP microSEXP, SEXP vegpSEXP, SEXP otherSEXP, SEXP matSEXP, SEXP outSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type reqhgt(reqhgtSEXP);
+    Rcpp::traits::input_parameter< bool >::type Dynreqhgt(DynreqhgtSEXP);
     Rcpp::traits::input_parameter< DataFrame >::type obstime(obstimeSEXP);
     Rcpp::traits::input_parameter< List >::type climdata(climdataSEXP);
     Rcpp::traits::input_parameter< List >::type snowm(snowmSEXP);
@@ -573,7 +575,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type other(otherSEXP);
     Rcpp::traits::input_parameter< double >::type mat(matSEXP);
     Rcpp::traits::input_parameter< std::vector<bool> >::type out(outSEXP);
-    rcpp_result_gen = Rcpp::wrap(gridmicrosnow2(reqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out));
+    rcpp_result_gen = Rcpp::wrap(gridmicrosnow2(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -863,8 +865,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_microclimf_gridmodelsnow2", (DL_FUNC) &_microclimf_gridmodelsnow2, 6},
     {"_microclimf_snowdayan", (DL_FUNC) &_microclimf_snowdayan, 1},
     {"_microclimf_belowpointsnow", (DL_FUNC) &_microclimf_belowpointsnow, 6},
-    {"_microclimf_gridmicrosnow1", (DL_FUNC) &_microclimf_gridmicrosnow1, 9},
-    {"_microclimf_gridmicrosnow2", (DL_FUNC) &_microclimf_gridmicrosnow2, 9},
+    {"_microclimf_gridmicrosnow1", (DL_FUNC) &_microclimf_gridmicrosnow1, 10},
+    {"_microclimf_gridmicrosnow2", (DL_FUNC) &_microclimf_gridmicrosnow2, 10},
     {"_microclimf_clearskyradCpp", (DL_FUNC) &_microclimf_clearskyradCpp, 9},
     {"_microclimf_solpositionvCpp", (DL_FUNC) &_microclimf_solpositionvCpp, 8},
     {"_microclimf_pointmprocess", (DL_FUNC) &_microclimf_pointmprocess, 8},

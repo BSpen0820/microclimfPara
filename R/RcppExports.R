@@ -121,12 +121,12 @@ belowpointsnow <- function(reqhgt, meanD, snowtempg, Tzd, Tza, hiy) {
     .Call(`_microclimf_belowpointsnow`, reqhgt, meanD, snowtempg, Tzd, Tza, hiy)
 }
 
-gridmicrosnow1 <- function(reqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out) {
-    .Call(`_microclimf_gridmicrosnow1`, reqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out)
+gridmicrosnow1 <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out) {
+    .Call(`_microclimf_gridmicrosnow1`, reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out)
 }
 
-gridmicrosnow2 <- function(reqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out) {
-    .Call(`_microclimf_gridmicrosnow2`, reqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out)
+gridmicrosnow2 <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out) {
+    .Call(`_microclimf_gridmicrosnow2`, reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out)
 }
 
 clearskyradCpp <- function(year, month, day, lt, lat, lon, tc, rh, pk) {
