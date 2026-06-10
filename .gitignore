@@ -5,3 +5,5 @@
 src/*.o
 src/*.so
 src/*.dll
+CLAUDE.md
+Code_review_report.md

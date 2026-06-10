@@ -5894,7 +5894,7 @@ DataFrame microclimatemodel_wrapper(DataFrame obstime, DataFrame climdata, List 
                 // Compute wind
                 double ufps = (ka * wspeed[i]) / std::log((zref - dp) / zmp);
                 double umu = uf[i] / ufps;
-                windmodel wvars = windCpp(reqhgt, zref, hgt, pai, zref, umu, 1.0, tiw);
+                windmodel wvars = windCpp(reqhgt, zref, hgt, pai, wspeed[i], umu, 1.0, tiw);
                 uz[i] = wvars.uz;
                 // Compute additional variabales needed
                 double es = satvapCpp(tc[i]);
