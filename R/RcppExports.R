@@ -2,198 +2,222 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 zeroplanedisCpp <- function(h, pai) {
-    .Call(`_microclimf_zeroplanedisCpp`, h, pai)
+    .Call(`_microclimfPara_zeroplanedisCpp`, h, pai)
 }
 
 roughlengthCpp <- function(h, pai, d, psi_h) {
-    .Call(`_microclimf_roughlengthCpp`, h, pai, d, psi_h)
+    .Call(`_microclimfPara_roughlengthCpp`, h, pai, d, psi_h)
 }
 
 satvapCpp <- function(tc) {
-    .Call(`_microclimf_satvapCpp`, tc)
+    .Call(`_microclimfPara_satvapCpp`, tc)
 }
 
 dewpointCpp <- function(ea) {
-    .Call(`_microclimf_dewpointCpp`, ea)
+    .Call(`_microclimfPara_dewpointCpp`, ea)
 }
 
-hourtodayCpp <- function(hourly, stat, rephour = TRUE) {
-    .Call(`_microclimf_hourtodayCpp`, hourly, stat, rephour)
+hourtodayCpp <- function(hourly, stat, rephour) {
+    .Call(`_microclimfPara_hourtodayCpp`, hourly, stat, rephour)
 }
 
 manCpp <- function(x, n) {
-    .Call(`_microclimf_manCpp`, x, n)
+    .Call(`_microclimfPara_manCpp`, x, n)
 }
 
 BigLeafCpp <- function(obstime, climdata, vegp, groundp, soilm, lat, lon, dTmx = 25.0, zref = 2.0, maxiter = 100L, bwgt = 0.5, tol = 0.5, gmn = 0.1, yearG = TRUE) {
-    .Call(`_microclimf_BigLeafCpp`, obstime, climdata, vegp, groundp, soilm, lat, lon, dTmx, zref, maxiter, bwgt, tol, gmn, yearG)
+    .Call(`_microclimfPara_BigLeafCpp`, obstime, climdata, vegp, groundp, soilm, lat, lon, dTmx, zref, maxiter, bwgt, tol, gmn, yearG)
 }
 
 weatherhgtCpp <- function(obstime, climdata, zin, uzin, zout, lat, lon) {
-    .Call(`_microclimf_weatherhgtCpp`, obstime, climdata, zin, uzin, zout, lat, lon)
+    .Call(`_microclimfPara_weatherhgtCpp`, obstime, climdata, zin, uzin, zout, lat, lon)
 }
 
 soilmCpp <- function(climdata, rmu, mult, pwr, Smax, Smin, Ksat, a) {
-    .Call(`_microclimf_soilmCpp`, climdata, rmu, mult, pwr, Smax, Smin, Ksat, a)
+    .Call(`_microclimfPara_soilmCpp`, climdata, rmu, mult, pwr, Smax, Smin, Ksat, a)
 }
 
 soildCppm <- function(twi, Smin, Smax, tfact) {
-    .Call(`_microclimf_soildCppm`, twi, Smin, Smax, tfact)
+    .Call(`_microclimfPara_soildCppm`, twi, Smin, Smax, tfact)
 }
 
 mincondCpp <- function(leafabs, gs, tc, leafd) {
-    .Call(`_microclimf_mincondCpp`, leafabs, gs, tc, leafd)
+    .Call(`_microclimfPara_mincondCpp`, leafabs, gs, tc, leafd)
 }
 
 solargrid <- function(slope, aspect, obstime, micro) {
-    .Call(`_microclimf_solargrid`, slope, aspect, obstime, micro)
+    .Call(`_microclimfPara_solargrid`, slope, aspect, obstime, micro)
 }
 
 twostreamgrid <- function(reqhgt, micro) {
-    .Call(`_microclimf_twostreamgrid`, reqhgt, micro)
+    .Call(`_microclimfPara_twostreamgrid`, reqhgt, micro)
 }
 
 windgrid <- function(reqhgt, micro) {
-    .Call(`_microclimf_windgrid`, reqhgt, micro)
+    .Call(`_microclimfPara_windgrid`, reqhgt, micro)
 }
 
 soiltempgrid <- function(micro) {
-    .Call(`_microclimf_soiltempgrid`, micro)
+    .Call(`_microclimfPara_soiltempgrid`, micro)
 }
 
 abovegrid <- function(reqhgt, micro) {
-    .Call(`_microclimf_abovegrid`, reqhgt, micro)
+    .Call(`_microclimfPara_abovegrid`, reqhgt, micro)
 }
 
 belowgrid <- function(reqhgt, micro, hiy, complete) {
-    .Call(`_microclimf_belowgrid`, reqhgt, micro, hiy, complete)
+    .Call(`_microclimfPara_belowgrid`, reqhgt, micro, hiy, complete)
 }
 
 runmicro1Cpp <- function(obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, complete, mat, out) {
-    .Call(`_microclimf_runmicro1Cpp`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, complete, mat, out)
+    .Call(`_microclimfPara_runmicro1Cpp`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, complete, mat, out)
 }
 
 runmicro2Cpp <- function(obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, complete, mat, out) {
-    .Call(`_microclimf_runmicro2Cpp`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, complete, mat, out)
+    .Call(`_microclimfPara_runmicro2Cpp`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, complete, mat, out)
 }
 
 runmicro3Cpp <- function(dfsel, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, complete, mat, out) {
-    .Call(`_microclimf_runmicro3Cpp`, dfsel, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, complete, mat, out)
+    .Call(`_microclimfPara_runmicro3Cpp`, dfsel, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, complete, mat, out)
 }
 
 runmicro4Cpp <- function(dfsel, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, complete, mat, out) {
-    .Call(`_microclimf_runmicro4Cpp`, dfsel, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, complete, mat, out)
+    .Call(`_microclimfPara_runmicro4Cpp`, dfsel, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, complete, mat, out)
 }
 
 runbioclim1Cpp <- function(obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, mat, out, wetq, dryq, hotq, colq, air) {
-    .Call(`_microclimf_runbioclim1Cpp`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, mat, out, wetq, dryq, hotq, colq, air)
+    .Call(`_microclimfPara_runbioclim1Cpp`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, mat, out, wetq, dryq, hotq, colq, air)
 }
 
 runbioclim2Cpp <- function(obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, mat, out, wetq, dryq, hotq, colq, air) {
-    .Call(`_microclimf_runbioclim2Cpp`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, mat, out, wetq, dryq, hotq, colq, air)
+    .Call(`_microclimfPara_runbioclim2Cpp`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, mat, out, wetq, dryq, hotq, colq, air)
 }
 
 runbioclim3Cpp <- function(obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, mat, out, wetq, dryq, hotq, colq, air) {
-    .Call(`_microclimf_runbioclim3Cpp`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, mat, out, wetq, dryq, hotq, colq, air)
+    .Call(`_microclimfPara_runbioclim3Cpp`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, mat, out, wetq, dryq, hotq, colq, air)
 }
 
 runbioclim4Cpp <- function(obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, mat, out, wetq, dryq, hotq, colq, air) {
-    .Call(`_microclimf_runbioclim4Cpp`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, mat, out, wetq, dryq, hotq, colq, air)
+    .Call(`_microclimfPara_runbioclim4Cpp`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, mat, out, wetq, dryq, hotq, colq, air)
 }
 
 pointmodelsnow <- function(obstime, climdata, vegp, other, snowenv, tol = 0.5, maxiter = 100) {
-    .Call(`_microclimf_pointmodelsnow`, obstime, climdata, vegp, other, snowenv, tol, maxiter)
+    .Call(`_microclimfPara_pointmodelsnow`, obstime, climdata, vegp, other, snowenv, tol, maxiter)
 }
 
 gridmodelsnow1 <- function(obstime, climdata, pointm, vegp, other, snowenv) {
-    .Call(`_microclimf_gridmodelsnow1`, obstime, climdata, pointm, vegp, other, snowenv)
+    .Call(`_microclimfPara_gridmodelsnow1`, obstime, climdata, pointm, vegp, other, snowenv)
 }
 
 gridmodelsnow2 <- function(obstime, climdata, pointm, vegp, other, snowenv) {
-    .Call(`_microclimf_gridmodelsnow2`, obstime, climdata, pointm, vegp, other, snowenv)
+    .Call(`_microclimfPara_gridmodelsnow2`, obstime, climdata, pointm, vegp, other, snowenv)
 }
 
 snowdayan <- function(stempg) {
-    .Call(`_microclimf_snowdayan`, stempg)
+    .Call(`_microclimfPara_snowdayan`, stempg)
 }
 
 belowpointsnow <- function(reqhgt, meanD, snowtempg, Tzd, Tza, hiy) {
-    .Call(`_microclimf_belowpointsnow`, reqhgt, meanD, snowtempg, Tzd, Tza, hiy)
+    .Call(`_microclimfPara_belowpointsnow`, reqhgt, meanD, snowtempg, Tzd, Tza, hiy)
 }
 
 gridmicrosnow1 <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out) {
-    .Call(`_microclimf_gridmicrosnow1`, reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out)
+    .Call(`_microclimfPara_gridmicrosnow1`, reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out)
 }
 
 gridmicrosnow2 <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out) {
-    .Call(`_microclimf_gridmicrosnow2`, reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out)
+    .Call(`_microclimfPara_gridmicrosnow2`, reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out)
 }
 
 clearskyradCpp <- function(year, month, day, lt, lat, lon, tc, rh, pk) {
-    .Call(`_microclimf_clearskyradCpp`, year, month, day, lt, lat, lon, tc, rh, pk)
+    .Call(`_microclimfPara_clearskyradCpp`, year, month, day, lt, lat, lon, tc, rh, pk)
 }
 
 solpositionvCpp <- function(year, month, day, lt, lat, lon, slope, aspect) {
-    .Call(`_microclimf_solpositionvCpp`, year, month, day, lt, lat, lon, slope, aspect)
+    .Call(`_microclimfPara_solpositionvCpp`, year, month, day, lt, lat, lon, slope, aspect)
 }
 
 pointmprocess <- function(pointvars, zref, h, pai, rho, Vm, Vq, Mc) {
-    .Call(`_microclimf_pointmprocess`, pointvars, zref, h, pai, rho, Vm, Vq, Mc)
+    .Call(`_microclimfPara_pointmprocess`, pointvars, zref, h, pai, rho, Vm, Vq, Mc)
 }
 
 flowdirCpp <- function(md) {
-    .Call(`_microclimf_flowdirCpp`, md)
+    .Call(`_microclimfPara_flowdirCpp`, md)
 }
 
 flowaccCpp <- function(dm) {
-    .Call(`_microclimf_flowaccCpp`, dm)
+    .Call(`_microclimfPara_flowaccCpp`, dm)
 }
 
 canintfrac <- function(hgt, pai, uf, prec, tc, Li) {
-    .Call(`_microclimf_canintfrac`, hgt, pai, uf, prec, tc, Li)
+    .Call(`_microclimfPara_canintfrac`, hgt, pai, uf, prec, tc, Li)
 }
 
 meltmu <- function(skyview, stemp, tc) {
-    .Call(`_microclimf_meltmu`, skyview, stemp, tc)
+    .Call(`_microclimfPara_meltmu`, skyview, stemp, tc)
 }
 
 meltmu2 <- function(mu, stemp, tc) {
-    .Call(`_microclimf_meltmu2`, mu, stemp, tc)
+    .Call(`_microclimfPara_meltmu2`, mu, stemp, tc)
 }
 
 snowdaysfun <- function(maxsnowdepth, minsnowdepth) {
-    .Call(`_microclimf_snowdaysfun`, maxsnowdepth, minsnowdepth)
+    .Call(`_microclimfPara_snowdaysfun`, maxsnowdepth, minsnowdepth)
 }
 
 applycpp3 <- function(a, fun_name) {
-    .Call(`_microclimf_applycpp3`, a, fun_name)
+    .Call(`_microclimfPara_applycpp3`, a, fun_name)
 }
 
 leafrcpp <- function(lref, pai, gref, x, albin, ltrr) {
-    .Call(`_microclimf_leafrcpp`, lref, pai, gref, x, albin, ltrr)
+    .Call(`_microclimfPara_leafrcpp`, lref, pai, gref, x, albin, ltrr)
 }
 
 solve_lref <- function(pai, gref, x, albin, ltrr, tol = 1e-6, max_iter = 100L) {
-    .Call(`_microclimf_solve_lref`, pai, gref, x, albin, ltrr, tol, max_iter)
+    .Call(`_microclimfPara_solve_lref`, pai, gref, x, albin, ltrr, tol, max_iter)
 }
 
 solve_gref <- function(lref, pai, x, albin, ltrr, tol = 1e-6, max_iter = 100L) {
-    .Call(`_microclimf_solve_gref`, lref, pai, x, albin, ltrr, tol, max_iter)
+    .Call(`_microclimfPara_solve_gref`, lref, pai, x, albin, ltrr, tol, max_iter)
 }
 
 find_lref <- function(pai, gref, x, albin, ltrr) {
-    .Call(`_microclimf_find_lref`, pai, gref, x, albin, ltrr)
+    .Call(`_microclimfPara_find_lref`, pai, gref, x, albin, ltrr)
 }
 
 find_gref <- function(lref, pai, x, albin, ltrr) {
-    .Call(`_microclimf_find_gref`, lref, pai, x, albin, ltrr)
+    .Call(`_microclimfPara_find_gref`, lref, pai, x, albin, ltrr)
 }
 
 fill_naCpp <- function(m, mask) {
-    .Call(`_microclimf_fill_naCpp`, m, mask)
+    .Call(`_microclimfPara_fill_naCpp`, m, mask)
 }
 
 microclimatemodel_wrapper <- function(obstime, climdata, BLout, vegp, groundp, reqhgt, zref, lat, lon) {
-    .Call(`_microclimf_microclimatemodel_wrapper`, obstime, climdata, BLout, vegp, groundp, reqhgt, zref, lat, lon)
+    .Call(`_microclimfPara_microclimatemodel_wrapper`, obstime, climdata, BLout, vegp, groundp, reqhgt, zref, lat, lon)
+}
+
+runmicro1Par <- function(obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, complete, mat, out, ncores = 2L) {
+    .Call(`_microclimfPara_runmicro1Par`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, complete, mat, out, ncores)
+}
+
+runmicro2Par <- function(obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, complete, mat, out, ncores = 2L) {
+    .Call(`_microclimfPara_runmicro2Par`, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, complete, mat, out, ncores)
+}
+
+runmicro3Par <- function(dfsel, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, complete, mat, out, ncores = 2L) {
+    .Call(`_microclimfPara_runmicro3Par`, dfsel, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lat, lon, Sminp, Smaxp, tfact, complete, mat, out, ncores)
+}
+
+runmicro4Par <- function(dfsel, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, complete, mat, out, ncores = 2L) {
+    .Call(`_microclimfPara_runmicro4Par`, dfsel, obstime, climdata, pointm, vegp, soilc, reqhgt, zref, lats, lons, Sminp, Smaxp, tfact, complete, mat, out, ncores)
+}
+
+gridmodelsnow1Par <- function(obstime, climdata, pointm, vegp, other, snowenv, ncores = 2L) {
+    .Call(`_microclimfPara_gridmodelsnow1Par`, obstime, climdata, pointm, vegp, other, snowenv, ncores)
+}
+
+gridmodelsnow2Par <- function(obstime, climdata, pointm, vegp, other, snowenv, ncores = 2L) {
+    .Call(`_microclimfPara_gridmodelsnow2Par`, obstime, climdata, pointm, vegp, other, snowenv, ncores)
 }
 

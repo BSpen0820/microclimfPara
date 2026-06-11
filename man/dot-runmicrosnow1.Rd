@@ -21,7 +21,9 @@
   twi = NA,
   wsa = NA,
   svf = NA,
-  Dynreqhgt = FALSE
+  Dynreqhgt = FALSE,
+  parallel = FALSE,
+  ncores = 2
 )
 }
 \description{

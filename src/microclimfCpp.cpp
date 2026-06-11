@@ -1,22 +1,4 @@
-#include <Rcpp.h>
-#include "microclimfheaders.h"
-#include <iostream>
-#include <cmath>
-#include <vector>
-#include <algorithm>
-#include <string>
-#include <stdexcept>
-#include <tuple>
-#include <cfloat>
-#include <numeric>
-#include <queue>
-using namespace Rcpp;
-constexpr double pi = 3.14159265358979323846;
-constexpr double torad = 3.14159265358979323846 / 180.0;
-constexpr double sb = 5.67e-8;
-constexpr double thetam = 0.365;
-constexpr double ka = 0.4;
-constexpr double omdy = (2.0 * 3.14159265358979323846) / (24.0 * 3600.0);
+#include "microclimfCppfunctions.h"
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // ************************************** Worker functions ****************************************************************** //
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -82,7 +64,7 @@ solmodel solpositionCpp(double lat, double lon, int year, int month, int day, do
     return solpos;
 }
 // ** Calculates solar index ** //
-double solarindexCpp(double slope, double aspect, double zend, double azid, bool shadowmask = false)
+double solarindexCpp(double slope, double aspect, double zend, double azid, bool shadowmask)
 {
     double si;
     if (zend > 90.0 && !shadowmask) {
@@ -514,7 +496,7 @@ double PenmanMonteithCpp(double Rabs, double gHa, double gV, double tc, double t
 }
 // **  Function to compute daily from hourly - each value replicated 24 times ** //
 // [[Rcpp::export]]
-std::vector<double> hourtodayCpp(std::vector<double> hourly, std::string stat, bool rephour = true) {
+std::vector<double> hourtodayCpp(std::vector<double> hourly, std::string stat, bool rephour) {
     int numDays = hourly.size() / 24;
     std::vector<double> daily(rephour ? numDays * 24 : numDays);
     for (int i = 0; i < numDays; ++i) {
@@ -639,7 +621,7 @@ soilstruct soilpfun(double Vm, double Vq, double Mc, double rho)
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // **  Function to compute ground heat flux ** //
 Gmodel GFluxCpp(std::vector<double> Tg, std::vector<double> soilm, double rho, double Vm, double Vq, double Mc,
-    std::vector<double> Gmax, std::vector<double> Gmin, int iter, bool yearG = true) {
+    std::vector<double> Gmax, std::vector<double> Gmin, int iter, bool yearG) {
     // Time invariant variables
     double frs = Vm + Vq;
     double c1 = (0.57 + 1.73 * Vq + 0.93 * Vm) / (1.0 - 0.74 * Vq - 0.49 * Vm) - 2.8 * frs * (1.0 - frs);
@@ -968,7 +950,7 @@ std::vector<double> soilmCpp(DataFrame climdata, double rmu, double mult, double
     return soilm;
 }
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// ************************************* Functions used to drive microclimf ************************************************* //
+// ************************************* Functions used to drive microclimfPara ************************************************* //
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // soilmdistribute code(matrix - i.e.returns tadd)
 // [[Rcpp::export]]
@@ -1295,7 +1277,7 @@ soilmodel soiltemp_hrCpp(double tc, double es, double ea, double pk, double rada
     return out;
 }
 // Calculate temperature and vapour pressure above canopy
-abovecanstruct TVabove(double reqhgt, double zref, double h, double d, double zm, double T0, double tc, double ea, double surfwet = 1.0)
+abovecanstruct TVabove(double reqhgt, double zref, double h, double d, double zm, double T0, double tc, double ea, double surfwet)
 {
     double zh = 0.2 * zm;
     double estl = satvapCpp(T0);
@@ -3711,7 +3693,7 @@ List runbioclim4Cpp(DataFrame obstime, List climdata, List pointm, List vegp,
 // ** Li = snow load in previous time-step (mm snow water equivelent)
 // ** Sh = snow load per unit branch area coefficient (kg/m^3)
 double canopysnowintCpp(double hgt, double pai, double uf, double prec,
-    double tc, double Li, double Sh = 6.2)
+    double tc, double Li, double Sh)
 {
     if (hgt < 0.001) hgt = 0.001;
     if (pai < 0.001) pai = 0.001;
@@ -3833,7 +3815,7 @@ snowrad radoneB(obspoint obstime, climpoint clim, vegpoint vegp, snowpoint snow,
 }
 // One point in time, once cell, bigleaf.
 snowmodpoint snowoneB(obspoint obstime, climpoint clim, vegpoint vegp, snowpoint snow,
-    otherpoint other, std::vector<double> sdp, double umu = 1.0)
+    otherpoint other, std::vector<double> sdp, double umu)
 {
     snowmodpoint out{};
     // *** Adjust veg parameters for presence of snow

@@ -22,7 +22,9 @@
   twi = NA,
   wsa = NA,
   svf = NA,
-  method = "Cpp"
+  method = "Cpp",
+  parallel = FALSE,
+  ncores = 2
 )
 }
 \description{

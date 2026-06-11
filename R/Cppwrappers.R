@@ -47,7 +47,7 @@
 #' time increment of `weather`. Other vegetation paramaters are assumed time-invarient.
 #' @import stats
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib microclimf, .registration = TRUE
+#' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @rdname runpointmodel
 #' @examples
@@ -182,7 +182,7 @@ runpointmodel<-function(weather, reqhgt = 0.05, dtm, vegp, soilc, runchecks = TR
 #' convergence. Increasing this value improves accuracy at the expense of computation time.
 #' @import stats
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib microclimf, .registration = TRUE
+#' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @rdname runpointmodela
 #' @examples
@@ -219,7 +219,7 @@ runpointmodela<-function(climarrayr, tme, reqhgt = 0.05, dtm, vegp, soilc, matem
   dm1 <- dim(dtm)[1:2]
   dm2 <- dim(climarrayr$temp)[1:2]
   if (isTRUE(all.equal(dm1, dm2))) {
-    stop("microclimf is not designed for use cases where the climate data has the same resolution as the DTM.")
+    stop("microclimfPara is not designed for use cases where the climate data has the same resolution as the DTM.")
   }
   # Sort out all the rasters
   # Calculate modal wind direction
@@ -349,7 +349,7 @@ runpointmodela<-function(climarrayr, tme, reqhgt = 0.05, dtm, vegp, soilc, matem
 #' @import terra
 #' @import stats
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib microclimf, .registration = TRUE
+#' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @rdname runmicro
 #' @examples
@@ -378,20 +378,21 @@ runpointmodela<-function(climarrayr, tme, reqhgt = 0.05, dtm, vegp, soilc, matem
 runmicro <- function(micropoint, reqhgt, vegp, soilc, dtm, dtmc = NA, altcorrect = 0,
                      snow = FALSE, snowmod = NA, runchecks = TRUE, pai_a = NA, tfact = 1.5,
                      out = rep(TRUE, 10), slr = NA, apr = NA, hor = NA, twi = NA,
-                     wsa = NA, svf = NA, method = "Cpp", Dynreqhgt = FALSE) {
+                     wsa = NA, svf = NA, method = "Cpp", Dynreqhgt = FALSE,
+                     parallel = FALSE, ncores = 2) {
   if (snow) { # data frame input
     if (class(micropoint) == "micropoint") { # data.frame climate input
       mout<-.runmicrosnow1(micropoint,reqhgt,vegp,soilc,dtm,snowmod,runchecks,pai_a,
-                           tfact,out,slr,apr,hor,twi,wsa,svf,Dynreqhgt)
+                           tfact,out,slr,apr,hor,twi,wsa,svf,Dynreqhgt,parallel,ncores)
     } else {  # array climate input
       if (class(dtmc) == "logical") stop("Require dtmc. Please provide\n")
       mout<-.runmicrosnow2(micropoint,reqhgt,vegp,soilc,dtm,dtmc,snowmod,altcorrect,
-                           runchecks,pai_a,tfact,out,slr,apr,hor,twi,wsa,svf,Dynreqhgt)
+                           runchecks,pai_a,tfact,out,slr,apr,hor,twi,wsa,svf,Dynreqhgt,parallel,ncores)
     }
   } else {
     if (class(micropoint) != "micropoint"  &  class(dtmc) == "logical")  stop("Require dtmc. Please provide\n")
     mout<-.runmicronosnow(micropoint,reqhgt,vegp,soilc,dtm,dtmc,altcorrect,runchecks,
-                          pai_a,tfact,out,slr,apr,hor,twi,wsa,svf)
+                          pai_a,tfact,out,slr,apr,hor,twi,wsa,svf,parallel=parallel,ncores=ncores)
   }
   mout$tme<-as.POSIXct(micropoint[[1]]$tmeorig)
   return(mout)
@@ -433,7 +434,7 @@ runmicro <- function(micropoint, reqhgt, vegp, soilc, dtm, dtmc = NA, altcorrect
 #' @import terra
 #' @import ncdf4
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib microclimf, .registration = TRUE
+#' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @details if `writeasnc = TRUE` and all entries in `out` are `TRUE`, a ncdf4
 #' files for each tile are written out, unless the corresponding tile comprises
@@ -620,7 +621,7 @@ runmicro_big <- function(micropoint, reqhgt, pathout = getwd(), vegp, soilc, dtm
 #' in comparison to one year of data.
 #' @import stats
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib microclimf, .registration = TRUE
+#' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @rdname runbioclim
 #' @examples
@@ -697,7 +698,7 @@ runbioclim <- function(climdata, reqhgt, vegp, soilc, dtm, dtmc = NA, tme = NA, 
 #' [subsetpointmodel()].
 #' @import terra
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib microclimf, .registration = TRUE
+#' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @rdname runsnowmodel
 #' @examples
@@ -719,18 +720,18 @@ runbioclim <- function(climdata, reqhgt, vegp, soilc, dtm, dtmc = NA, tme = NA, 
 #' smod <- runsnowmodel(climdata, micropoint, vegp, soilc, dtmcaerth, method = "fast")
 runsnowmodel<-function(weather, micropoint, vegp, soilc, dtm, dtmc = NA, tme = NA, altcorrect = 0,
                        snowenv="Taiga", method="fast", snowinitd = 0,  snowinita = 0,
-                       zref = 2, windhgt = zref, stfact = 0.01) {
+                       zref = 2, windhgt = zref, stfact = 0.01, parallel = FALSE, ncores = 2) {
   vegp <- .cleanvegp(vegp) # cleans vegetation parameters to stop snow model returning NAs
   if (class(dtmc)[1] == "PackedSpatRaster") dtmc<-rast(dtmc)
   dtmc[is.na(dtmc)] <- 0
   if (class(micropoint) == "micropoint") { # data.frame weather input
     if (length(micropoint$subs) == length(micropoint$tmeorig)) { # no subset required
-      smod<-.snowmodel1(weather,dtm,vegp,soilc,snowenv,snowinitd,snowinita,micropoint$zref,micropoint$zref,stfact)
+      smod<-.snowmodel1(weather,dtm,vegp,soilc,snowenv,snowinitd,snowinita,micropoint$zref,micropoint$zref,stfact,parallel,ncores)
     } else { # subset of model required
       if (method == "fast") {
-        smod<-.snowmodelq1(weather,dtm,vegp,soilc,micropoint$subs,snowenv,snowinitd,snowinita,zref,windhgt,stfact)
+        smod<-.snowmodelq1(weather,dtm,vegp,soilc,micropoint$subs,snowenv,snowinitd,snowinita,zref,windhgt,stfact,parallel,ncores)
       }  else {  # method = slow
-        smod<-.snowmodel1(weather,dtm,vegp,soilc,snowenv,snowinitd,snowinita,zref,windhgt,stfact)
+        smod<-.snowmodel1(weather,dtm,vegp,soilc,snowenv,snowinitd,snowinita,zref,windhgt,stfact,parallel,ncores)
         smod<-subsetsnowmodel(smod,micropoint$subs)
       }  # end fast / slow test
     } # end subset required test
@@ -744,14 +745,14 @@ runsnowmodel<-function(weather, micropoint, vegp, soilc, dtm, dtmc = NA, tme = N
     }
     if (length(subs) == length(tmeorig)) { # no subset required
       smod<-.snowmodel2(weather,tme,dtm,dtmc,vegp,soilc,altcorrect,snowenv,
-                        snowinitd,snowinita,micropoint[[1]]$zref,micropoint[[1]]$zref,stfact)
+                        snowinitd,snowinita,micropoint[[1]]$zref,micropoint[[1]]$zref,stfact,parallel,ncores)
     } else { # subset of model required
       if (method == "fast") {
         smod<-.snowmodelq2(weather,tme,dtm,dtmc,vegp,soilc,subs,altcorrect,snowenv,
-                           snowinitd,snowinita,zref,windhgt,stfact)
+                           snowinitd,snowinita,zref,windhgt,stfact,parallel,ncores)
       } else {# method = slow
         smod<-.snowmodel2(weather,tme,dtm,dtmc,vegp,soilc,altcorrect,snowenv,
-                          snowinitd,snowinita,zref,windhgt,stfact)
+                          snowinitd,snowinita,zref,windhgt,stfact,parallel,ncores)
         smod<-subsetsnowmodel(smod,subs)
       } # end fast / slow test
     } # end subset test

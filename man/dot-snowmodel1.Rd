@@ -14,7 +14,9 @@
   snowinita = 0,
   zref = 2,
   windhgt = zref,
-  tfact = 0.02
+  tfact = 0.02,
+  parallel = FALSE,
+  ncores = 2
 )
 }
 \description{

@@ -1,11 +1,11 @@
-Package: microclimf
+Package: microclimfPara
 Type: Package
-Title: Modified Microclimf: Fast above, below or within canopy gridded microclimate modelling with R
+Title: microclimfPara: Fast above, below or within canopy gridded microclimate modelling with parallelization
 Version: 2.0.1
 Authors@R: c(
     person("Bryan", "Spencer", email = "bspencer@uidaho.edu", role = "cre"))
 Maintainer: B. D. Spencer <bspencer@uidaho.edu>
-Description: The functions in the microclimf package contain tools for 
+Description: The functions in the microclimfPara package contain tools for 
     fast modelling of the mechanistic processes that govern below or above canopy
     microclimate on gridded data. It builds on the microclima and microclimc packages, but 
     contains all the functions needed to run the model in isolation, with no other 
@@ -18,10 +18,12 @@ Description: The functions in the microclimf package contain tools for
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
-LinkingTo: Rcpp 
+LinkingTo: Rcpp,
+    RcppParallel
 Imports: abind,
   ncdf4,
   Rcpp,
+  RcppParallel,
   sp,
   sf,
   stats,

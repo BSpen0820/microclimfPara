@@ -1063,7 +1063,7 @@ flowacc<-function (dtm, basins = NA) {
 }
 #' Run C++ version of model with time-invarient vegetation and data.frame weather input
 .runmodel1Cpp<-function(micropoint,vegp,soilc,dtm, reqhgt=0.05, runchecks = TRUE, pai_a = NA, tfact = 1.5, out = rep(TRUE,10), slr = NA,
-                        apr = NA, hor = NA, twi = NA, wsa = NA, svf = NA) {
+                        apr = NA, hor = NA, twi = NA, wsa = NA, svf = NA, parallel = FALSE, ncores = 2) {
   # Unpack and check variables
   up<-.unpack(dtm,vegp,soilc)
   dtm<-up$dtm
@@ -1165,13 +1165,17 @@ flowacc<-function (dtm, basins = NA) {
     out<-out2*out
   }
   matemp<-micropoint$matemp
-  mout<-runmicro1Cpp(obstime,weather,pointm,vegp,soilc,reqhgt,micropoint$zref,ll$lat,ll$long,Sminp,Smaxp,tfact,complete,matemp,out)
+  if (parallel) {
+    mout<-runmicro1Par(obstime,weather,pointm,vegp,soilc,reqhgt,micropoint$zref,ll$lat,ll$long,Sminp,Smaxp,tfact,complete,matemp,out,ncores)
+  } else {
+    mout<-runmicro1Cpp(obstime,weather,pointm,vegp,soilc,reqhgt,micropoint$zref,ll$lat,ll$long,Sminp,Smaxp,tfact,complete,matemp,out)
+  }
   return(mout)
 }
 #' Run C++ version of model with time-invarient vegetation and array weather input
 .runmodel2Cpp<-function(micropointa,vegp,soilc,dtm,dtmc,reqhgt=0.05, runchecks = TRUE, altcorrect=0,
                        pai_a = NA, tfact = 1.5, out = rep(TRUE,10), slr = NA,
-                       apr = NA, hor = NA, twi = NA, wsa = NA, svf = NA) {
+                       apr = NA, hor = NA, twi = NA, wsa = NA, svf = NA, parallel = FALSE, ncores = 2) {
   # =========== Unpack variables and run checks ======================== #
   up<-.unpack(dtm,vegp,soilc)
   dtm<-up$dtm
@@ -1339,11 +1343,15 @@ flowacc<-function (dtm, basins = NA) {
     out2<-c(1,0,0,1,0,0,0,0,0,0)
     out<-out2*out
   }
-  mout<-runmicro2Cpp(obstime,climdata,pointm,vegp,soilc,reqhgt,zref,ll$lats,ll$lons,Sminp,Smaxp,tfact,complete,matemp,out)
+  if (parallel) {
+    mout<-runmicro2Par(obstime,climdata,pointm,vegp,soilc,reqhgt,zref,ll$lats,ll$lons,Sminp,Smaxp,tfact,complete,matemp,out,ncores)
+  } else {
+    mout<-runmicro2Cpp(obstime,climdata,pointm,vegp,soilc,reqhgt,zref,ll$lats,ll$lons,Sminp,Smaxp,tfact,complete,matemp,out)
+  }
   return(mout)
 }
 .runmodel3Cpp<-function(micropoint,vegp,soilc,dtm, reqhgt=0.05, runchecks = TRUE, pai_a = NA, tfact = 1.5, out = rep(TRUE,10), slr = NA,
-                        apr = NA, hor = NA, twi = NA, wsa = NA, svf = NA) {
+                        apr = NA, hor = NA, twi = NA, wsa = NA, svf = NA, parallel = FALSE, ncores = 2) {
   # Unpack and check variables
   up<-.unpack(dtm,vegp,soilc)
   dtm<-up$dtm
@@ -1455,12 +1463,16 @@ flowacc<-function (dtm, basins = NA) {
     out<-out2*out
   }
   matemp<-micropoint$matemp
-  mout<-runmicro3Cpp(dflyr,obstime,weather,pointm,vegp,soilc,reqhgt,micropoint$zref,ll$lat,ll$long,Sminp,Smaxp,tfact,complete,matemp,out)
+  if (parallel) {
+    mout<-runmicro3Par(dflyr,obstime,weather,pointm,vegp,soilc,reqhgt,micropoint$zref,ll$lat,ll$long,Sminp,Smaxp,tfact,complete,matemp,out,ncores)
+  } else {
+    mout<-runmicro3Cpp(dflyr,obstime,weather,pointm,vegp,soilc,reqhgt,micropoint$zref,ll$lat,ll$long,Sminp,Smaxp,tfact,complete,matemp,out)
+  }
   return(mout)
 }
 .runmodel4Cpp<-function(micropointa,vegp,soilc,dtm,dtmc,reqhgt=0.05, runchecks = TRUE, altcorrect=0,
                         pai_a = NA, tfact = 1.5, out = rep(TRUE,10), slr = NA,
-                        apr = NA, hor = NA, twi = NA, wsa = NA, svf = NA) {
+                        apr = NA, hor = NA, twi = NA, wsa = NA, svf = NA, parallel = FALSE, ncores = 2) {
   # =========== Unpack variables and run checks ======================== #
   up<-.unpack(dtm,vegp,soilc)
   dtm<-up$dtm
@@ -1637,7 +1649,11 @@ flowacc<-function (dtm, basins = NA) {
     out2<-c(1,0,0,1,0,0,0,0,0,0)
     out<-out2*out
   }
-  mout<-runmicro4Cpp(dflyr,obstime,climdata,pointm,vegp,soilc,reqhgt,zref,ll$lats,ll$lons,Sminp,Smaxp,tfact,complete,matemp,out)
+  if (parallel) {
+    mout<-runmicro4Par(dflyr,obstime,climdata,pointm,vegp,soilc,reqhgt,zref,ll$lats,ll$lons,Sminp,Smaxp,tfact,complete,matemp,out,ncores)
+  } else {
+    mout<-runmicro4Cpp(dflyr,obstime,climdata,pointm,vegp,soilc,reqhgt,zref,ll$lats,ll$lons,Sminp,Smaxp,tfact,complete,matemp,out)
+  }
   return(mout)
 }
 #' Check SpatRasts of model input
@@ -2495,7 +2511,7 @@ flowacc<-function (dtm, basins = NA) {
   tpic
 }
 #' full snow model with data.frame weather inputs
-.snowmodel1<-function(weather,dtm,vegp,soilc,snowenv="Taiga",snowinitd = 0, snowinita = 0, zref = 2, windhgt = zref, tfact = 0.02) {
+.snowmodel1<-function(weather,dtm,vegp,soilc,snowenv="Taiga",snowinitd = 0, snowinita = 0, zref = 2, windhgt = zref, tfact = 0.02, parallel = FALSE, ncores = 2) {
   # ================== unpack variables ==================================== #
   up<-.unpack(dtm,vegp,soilc)
   dtm<-up$dtm
@@ -2584,7 +2600,11 @@ flowacc<-function (dtm, basins = NA) {
     if (ed > h) ed<-h
     s<-c(st:ed)
     s<-s[s<=smx]
-    smod<- gridmodelsnow1(obstime[s,],weather[s,],pointm[s,],vegp,other,snowenv)
+    if (parallel) {
+      smod <- gridmodelsnow1Par(obstime[s,],weather[s,],pointm[s,],vegp,other,snowenv,ncores)
+    } else {
+      smod <- gridmodelsnow1(obstime[s,],weather[s,],pointm[s,],vegp,other,snowenv)
+    }
     # Topographic snow re-distribution
     tpr<-10*mean(weather$windspeed[s])^0.5
     af<-round(tpr/res(dtm)[1],0)
@@ -2625,7 +2645,7 @@ flowacc<-function (dtm, basins = NA) {
 }
 #' quick snow model with data.frame weather inputs
 .snowmodelq1<-function(weather,dtm,vegp,soilc,subs,snowenv="Taiga",snowinitd = 0,
-                       snowinita = 0, zref = 2, windhgt = zref, tfact = 0.02) {
+                       snowinita = 0, zref = 2, windhgt = zref, tfact = 0.02, parallel = FALSE, ncores = 2) {
   # ================== unpack variables ==================================== #
   up<-.unpack(dtm,vegp,soilc)
   dtm<-up$dtm
@@ -2743,7 +2763,11 @@ flowacc<-function (dtm, basins = NA) {
     other$isnowdc[other$isnowdc<0]<-0
     other$isnowdg[other$isnowdg<0]<-0
     # Run snow model
-    smod<-gridmodelsnow1(obstime[s,],weather[s,],pointm[s,],vegp,other,snowenv)
+    if (parallel) {
+      smod <- gridmodelsnow1Par(obstime[s,],weather[s,],pointm[s,],vegp,other,snowenv,ncores)
+    } else {
+      smod <- gridmodelsnow1(obstime[s,],weather[s,],pointm[s,],vegp,other,snowenv)
+    }
     # Redistribute snow
     # Calculate change in snow depth
     dsnow<-smod$sdepc-.rta(other$isnowdc,24)  # ground and canopy
@@ -2778,7 +2802,7 @@ flowacc<-function (dtm, basins = NA) {
 }
 #' full snow model with array weather inputs
 .snowmodel2<-function(weather,tme,dtm,dtmc,vegp,soilc,altcorrect = 0,snowenv="Taiga",
-                      snowinitd = 0, snowinita = 0, zref = 2, windhgt = zref, tfact = 0.02) {
+                      snowinitd = 0, snowinita = 0, zref = 2, windhgt = zref, tfact = 0.02, parallel = FALSE, ncores = 2) {
   # ================== unpack variables ==================================== #
   n5days<-length(tme)/(24*5)
   pb <- utils::txtProgressBar(min = 0, max = n5days*2, style = 3)
@@ -2977,7 +3001,11 @@ flowacc<-function (dtm, basins = NA) {
     for (i in 1:6) pointm1[[i]]<-pointm[[i]][,,s]
     names(pointm1)<-names(pointm)
     vegp$leaft[is.na(vegp$leaft)]<-0.001
-    smod<- gridmodelsnow2(obstime[s,],climdata1,pointm1,vegp,other,snowenv)
+    if (parallel) {
+      smod <- gridmodelsnow2Par(obstime[s,],climdata1,pointm1,vegp,other,snowenv,ncores)
+    } else {
+      smod <- gridmodelsnow2(obstime[s,],climdata1,pointm1,vegp,other,snowenv)
+    }
     # Topographic snow re-distribution
     wss<-sqrt(wuv[s]^2+wvv[s]^2)
     tpr<-10*mean(wss)^0.5
@@ -3015,7 +3043,7 @@ flowacc<-function (dtm, basins = NA) {
 }
 #' quick snow model with array weather inputs
 .snowmodelq2<-function(weather,tme,dtm,dtmc,vegp,soilc,subs,altcorrect=0,snowenv="Taiga",
-                       snowinitd = 0, snowinita = 0, zref = 2, windhgt = zref, tfact = 0.02) {
+                       snowinitd = 0, snowinita = 0, zref = 2, windhgt = zref, tfact = 0.02, parallel = FALSE, ncores = 2) {
   ndays<-length(subs)/24
   pb <- utils::txtProgressBar(min = 0, max = ndays*2, style = 3)
   up<-.unpack(dtm,vegp,soilc)
@@ -3250,7 +3278,11 @@ flowacc<-function (dtm, basins = NA) {
     pointm1<-list()
     for (i in 1:9) pointm1[[i]]<-pointm[[i]][,,s]
     names(pointm1)<-names(pointm)
-    smod<-gridmodelsnow2(obstime[s,],climdata1,pointm1,vegp,other,snowenv)
+    if (parallel) {
+      smod <- gridmodelsnow2Par(obstime[s,],climdata1,pointm1,vegp,other,snowenv,ncores)
+    } else {
+      smod <- gridmodelsnow2(obstime[s,],climdata1,pointm1,vegp,other,snowenv)
+    }
     # Calculate change in snow depth
     dsnow<-smod$sdepc-.rta(other$isnowdc,24)  # ground and canopy
     dsnowg<-smod$sdepg-.rta(other$isnowdg,24) # ground only
@@ -3290,7 +3322,8 @@ flowacc<-function (dtm, basins = NA) {
 .runmicronosnow <- function(micropoint, reqhgt, vegp, soilc, dtm, dtmc = NA, altcorrect = 0,
                      runchecks = TRUE, pai_a = NA, tfact = 1.5,
                      out = rep(TRUE, 10), slr = NA, apr = NA, hor = NA,
-                     twi = NA, wsa = NA, svf = NA, method = "Cpp") {
+                     twi = NA, wsa = NA, svf = NA, method = "Cpp",
+                     parallel = FALSE, ncores = 2) {
   if (method == "R") {
     micro<-modelin(micropoint,vegp,soilc,dtm,dtmc,altcorrect,runchecks)
     if (reqhgt == 0) {
@@ -3333,15 +3366,15 @@ flowacc<-function (dtm, basins = NA) {
     dmx<-.vegpdmx(up$vegp)
     if (dmx == 1) {  # temporally invarient vegetation
       if (class(micropoint) == "micropoint") { # data.frame climate input
-        mout<-.runmodel1Cpp(micropoint,vegp,soilc,dtm,reqhgt,runchecks,pai_a,tfact,out,slr,apr,hor,twi,wsa)
+        mout<-.runmodel1Cpp(micropoint,vegp,soilc,dtm,reqhgt,runchecks,pai_a,tfact,out,slr,apr,hor,twi,wsa,parallel=parallel,ncores=ncores)
       } else {  # array climate input
-        mout<-.runmodel2Cpp(micropoint,vegp,soilc,dtm,dtmc,reqhgt,runchecks,altcorrect,pai_a,tfact,out,slr,apr,hor,twi,wsa)
+        mout<-.runmodel2Cpp(micropoint,vegp,soilc,dtm,dtmc,reqhgt,runchecks,altcorrect,pai_a,tfact,out,slr,apr,hor,twi,wsa,parallel=parallel,ncores=ncores)
       }
     } else { # time variant vegetation
       if (class(micropoint) == "micropoint") { # data.frame climate input
-        mout<-.runmodel3Cpp(micropoint,vegp,soilc,dtm,reqhgt,runchecks,pai_a,tfact,out,slr,apr,hor,twi,wsa)
+        mout<-.runmodel3Cpp(micropoint,vegp,soilc,dtm,reqhgt,runchecks,pai_a,tfact,out,slr,apr,hor,twi,wsa,parallel=parallel,ncores=ncores)
       } else { # array climate input
-        mout<-.runmodel4Cpp(micropoint,vegp,soilc,dtm,dtmc,reqhgt,runchecks,altcorrect,pai_a,tfact,out,slr,apr,hor,twi,wsa)
+        mout<-.runmodel4Cpp(micropoint,vegp,soilc,dtm,dtmc,reqhgt,runchecks,altcorrect,pai_a,tfact,out,slr,apr,hor,twi,wsa,parallel=parallel,ncores=ncores)
       } # end if array
     }  # end if time variant
   } # end if R/C++
@@ -3579,7 +3612,8 @@ flowacc<-function (dtm, basins = NA) {
 }
 #' Run microclimate grid model with snow (data.frame weather)
 .runmicrosnow1 <- function(micropoint,reqhgt,vegp,soilc,dtm,smod,runchecks=TRUE,pai_a=NA,tfact=1.5,
-                           out=rep(TRUE,10),slr=NA,apr=NA,hor=NA,twi=NA,wsa=NA,svf=NA,Dynreqhgt=FALSE)  {
+                           out=rep(TRUE,10),slr=NA,apr=NA,hor=NA,twi=NA,wsa=NA,svf=NA,Dynreqhgt=FALSE,
+                           parallel=FALSE,ncores=2)  {
   pb <- utils::txtProgressBar(min = 0, max = 5, style = 3)
   if (class(dtm) == "PackedSpatRaster") dtm<-rast(dtm)
   # (1) Figure out snow and no snow days
@@ -3602,7 +3636,7 @@ flowacc<-function (dtm, basins = NA) {
   # (3) Run no snow microclimate model for no snow days
   if (length(nosnowdays) > 0) {
     moutn<-.runmicronosnow(micropointn,reqhgt,vegp,soilc,dtm,dtmc=NA,altcorrect=0,runchecks,
-                           pai_a,tfact,out,slr,apr,hor,twi,wsa,svf)
+                           pai_a,tfact,out,slr,apr,hor,twi,wsa,svf,parallel=parallel,ncores=ncores)
   } else {
     moutn<-.createblanktemplate1(micropoint,reqhgt,vegp,soilc,dtm,out)
   }
@@ -3659,7 +3693,8 @@ flowacc<-function (dtm, basins = NA) {
 }
 #' Run microclimate grid model with snow (array weather)
 .runmicrosnow2 <- function(micropoint,reqhgt,vegp,soilc,dtm,dtmc,smod,altcorrect = 0,runchecks=TRUE,pai_a=NA,tfact=1.5,
-                           out=rep(TRUE,10),slr=NA,apr=NA,hor=NA,twi=NA,wsa=NA,svf=NA,Dynreqhgt = FALSE)  {
+                           out=rep(TRUE,10),slr=NA,apr=NA,hor=NA,twi=NA,wsa=NA,svf=NA,Dynreqhgt = FALSE,
+                           parallel=FALSE,ncores=2)  {
   pb <- utils::txtProgressBar(min = 0, max = 6, style = 3)
   if (class(dtm) == "PackedSpatRaster") dtm<-rast(dtm)
   # (1) Figure out snow and no snow days
@@ -3689,7 +3724,7 @@ flowacc<-function (dtm, basins = NA) {
   # (3) Run no snow microclimate model for no snow days
   if (length(nosnowdays) > 0) {
     moutn<-.runmicronosnow(micropointn,reqhgt,vegp,soilc,dtm,dtmc,altcorrect,runchecks,
-                           pai_a,tfact,out,slr,apr,hor,twi,wsa,svf)
+                           pai_a,tfact,out,slr,apr,hor,twi,wsa,svf,parallel=parallel,ncores=ncores)
   } else {
     moutn<-.createblanktemplate2(micropoint,reqhgt,vegp,soilc,dtm,dtmc,out)
   }

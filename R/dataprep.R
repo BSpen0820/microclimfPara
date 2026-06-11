@@ -840,7 +840,7 @@ checkinputs <- function(weather, vegp, soilc, dtm, windhgt = 2) {
 #' @return `leaft` a SpatRaster object of mean leaf transmittance (m)
 #'
 #' @details
-#' This function estimates the vegetation parameters needed to run microclimf from habitat types.
+#' This function estimates the vegetation parameters needed to run microclimfPara from habitat types.
 #' Plant area index values represent the combined one sided woody and green vegetation
 #' plant area per unit ground area. If not provided, then approximated
 #' from habitat type, location and date. The procedure is based on calibration
@@ -986,7 +986,7 @@ clumpestimate <- function(hgt, leafd, pai, maxclump = 0.95) {
 #' }
 #' @import terra
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib microclimf, .registration = TRUE
+#' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @details the microclimate model is not unduly sensitive to `lttr` so if unknown, an approximate
 #' value or the default can be used.

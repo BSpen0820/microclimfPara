@@ -130,7 +130,7 @@ soilmdistribute <- function(micro, tfact = 1.5) {
 #' @return an object of class micro with additional terms added for subsequent modelling
 #' @import terra
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib microclimf, .registration = TRUE
+#' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @rdname twostream
 twostream<-function(micro, reqhgt = 0.05, pai_a = NA, tfact=1.5) {
@@ -191,7 +191,7 @@ twostream<-function(micro, reqhgt = 0.05, pai_a = NA, tfact=1.5) {
 #' }
 #' @import terra
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib microclimf, .registration = TRUE
+#' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @rdname wind
 #' @details In downscaling wind, two processes are accounted for. Firstly the drag effects
@@ -233,7 +233,7 @@ wind <- function(micro, reqhgt = 0.05, pai_a = NA, tfact = 1.5) {
 #' }
 #' @import terra
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib microclimf, .registration = TRUE
+#' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @rdname soiltemp
 #' @seealso [wind()]
@@ -285,7 +285,7 @@ soiltemp  <- function(micro, reqhgt = 0.05, pai_a = NA, tfact = 1.5) {
 #' the supplied dtm and values for each hour as the z dimension.
 #' @import terra
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib microclimf, .registration = TRUE
+#' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @rdname aboveground
 aboveground<- function(micro, reqhgt = 0.05, pai_a = NA, tfact = 1.5) {
@@ -325,7 +325,7 @@ aboveground<- function(micro, reqhgt = 0.05, pai_a = NA, tfact = 1.5) {
 #' the supplied dtm and values for each hour as the z dimension.
 #' @import terra
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib microclimf, .registration = TRUE
+#' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @rdname belowground
 belowground<- function(micro, reqhgt = -0.05, pai_a = NA, tfact = 1.5) {

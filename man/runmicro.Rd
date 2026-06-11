@@ -25,7 +25,9 @@ runmicro(
   wsa = NA,
   svf = NA,
   method = "Cpp",
-  Dynreqhgt = FALSE
+  Dynreqhgt = FALSE,
+  parallel = FALSE,
+  ncores = 2
 )
 }
 \arguments{

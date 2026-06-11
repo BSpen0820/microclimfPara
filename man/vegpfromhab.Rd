@@ -54,7 +54,7 @@ The function `vegpfromhab` generates an object of class vegparams from
 a SpatRaster object of habitat types
 }
 \details{
-This function estimates the vegetation parameters needed to run microclimf from habitat types.
+This function estimates the vegetation parameters needed to run microclimfPara from habitat types.
 Plant area index values represent the combined one sided woody and green vegetation
 plant area per unit ground area. If not provided, then approximated
 from habitat type, location and date. The procedure is based on calibration

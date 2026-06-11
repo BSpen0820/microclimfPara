@@ -19,7 +19,9 @@
   hor = NA,
   twi = NA,
   wsa = NA,
-  svf = NA
+  svf = NA,
+  parallel = FALSE,
+  ncores = 2
 )
 }
 \description{

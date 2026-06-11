@@ -19,7 +19,9 @@ runsnowmodel(
   snowinita = 0,
   zref = 2,
   windhgt = zref,
-  stfact = 0.01
+  stfact = 0.01,
+  parallel = FALSE,
+  ncores = 2
 )
 }
 \arguments{

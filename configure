@@ -1,0 +1,10 @@
+#!/bin/sh
+# configure — runs before compilation on Unix/Linux/macOS
+# Queries RcppParallel for the correct TBB linker flags and writes them
+# into src/Makevars so no GNU Make extensions are needed there.
+
+RSCRIPT="${R_HOME}/bin/Rscript"
+RCPPPARALLEL_LDFLAGS=`"${RSCRIPT}" -e "cat(RcppParallel::LdFlags())"`
+
+sed -e "s|@RCPPPARALLEL_LDFLAGS@|${RCPPPARALLEL_LDFLAGS}|" \
+    src/Makevars.in > src/Makevars
