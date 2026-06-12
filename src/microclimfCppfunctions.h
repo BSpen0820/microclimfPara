@@ -146,6 +146,14 @@ snowmodpoint snowoneB(obspoint obstime, climpoint clim, vegpoint vegp,
                       std::vector<double> sdp, double umu = 1.0);
 NumericVector GFluxCppsnow(NumericVector snowt, NumericVector snowden);
 NumericMatrix bioclimfill(int rows, int cols);
+// Snow microclimate helpers (used by gridmicrosnow workers)
+NumericVector snowdayan(NumericVector stempg);
+NumericMatrix meanDsnow(NumericVector snowden);
+double belowpointsnow(double reqhgt, double meanD, double snowtempg, double Tzd, double Tza, double hiy);
+snowmicro snowabovepoint(double reqhgt, double zref, double tc, double relhum, double pk, double u2,
+                         double Rsw, double Rdif, double Rlw,
+                         double hgt, double pai, double paia, double leafd, double clump, double ltra, double leafden,
+                         solmodel solp, double si, double svfa, int shadowmask, double ws, double umu, double mxtc, snowpoint2 snowp);
 
 // Ground heat flux model (used by BigLeafCpp only, declared for completeness)
 Gmodel GFluxCpp(std::vector<double> Tg, std::vector<double> soilm,

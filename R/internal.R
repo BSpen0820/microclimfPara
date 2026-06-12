@@ -3656,8 +3656,11 @@ flowacc<-function (dtm, basins = NA) {
       out <- rep(FALSE, 10)
       out[c(1, 4)] <- TRUE
     }
-    if (parallel) warning("parallel=TRUE: snow-day microclimate runs serially (no parallel variant of gridmicrosnow1 exists yet)")
-    mouts<-gridmicrosnow1(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,micropoint$matemp,out)
+    if (parallel) {
+      mouts<-gridmicrosnow1Par(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,micropoint$matemp,out,ncores)
+    } else {
+      mouts<-gridmicrosnow1(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,micropoint$matemp,out)
+    }
   }
   utils::setTxtProgressBar(pb,4)
   if (length(nosnowdays) == 0) {
@@ -3744,8 +3747,11 @@ flowacc<-function (dtm, basins = NA) {
       out <- rep(FALSE, 10)
       out[c(1, 4)] <- TRUE
     }
-    if (parallel) warning("parallel=TRUE: snow-day microclimate runs serially (no parallel variant of gridmicrosnow2 exists yet)")
-    mouts<-gridmicrosnow2(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,matemp,out)
+    if (parallel) {
+      mouts<-gridmicrosnow2Par(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,matemp,out,ncores)
+    } else {
+      mouts<-gridmicrosnow2(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,matemp,out)
+    }
     utils::setTxtProgressBar(pb,5)
   }
   if (length(nosnowdays) == 0) {

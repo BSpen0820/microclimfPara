@@ -973,6 +973,48 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// gridmicrosnow1Par
+List gridmicrosnow1Par(double reqhgt, bool Dynreqhgt, DataFrame obstime, DataFrame climdata, List snowm, List micro, List vegp, List other, double mat, std::vector<bool> out, int ncores);
+RcppExport SEXP _microclimfPara_gridmicrosnow1Par(SEXP reqhgtSEXP, SEXP DynreqhgtSEXP, SEXP obstimeSEXP, SEXP climdataSEXP, SEXP snowmSEXP, SEXP microSEXP, SEXP vegpSEXP, SEXP otherSEXP, SEXP matSEXP, SEXP outSEXP, SEXP ncoresSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type reqhgt(reqhgtSEXP);
+    Rcpp::traits::input_parameter< bool >::type Dynreqhgt(DynreqhgtSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type obstime(obstimeSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type climdata(climdataSEXP);
+    Rcpp::traits::input_parameter< List >::type snowm(snowmSEXP);
+    Rcpp::traits::input_parameter< List >::type micro(microSEXP);
+    Rcpp::traits::input_parameter< List >::type vegp(vegpSEXP);
+    Rcpp::traits::input_parameter< List >::type other(otherSEXP);
+    Rcpp::traits::input_parameter< double >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< std::vector<bool> >::type out(outSEXP);
+    Rcpp::traits::input_parameter< int >::type ncores(ncoresSEXP);
+    rcpp_result_gen = Rcpp::wrap(gridmicrosnow1Par(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out, ncores));
+    return rcpp_result_gen;
+END_RCPP
+}
+// gridmicrosnow2Par
+List gridmicrosnow2Par(double reqhgt, bool Dynreqhgt, DataFrame obstime, List climdata, List snowm, List micro, List vegp, List other, double mat, std::vector<bool> out, int ncores);
+RcppExport SEXP _microclimfPara_gridmicrosnow2Par(SEXP reqhgtSEXP, SEXP DynreqhgtSEXP, SEXP obstimeSEXP, SEXP climdataSEXP, SEXP snowmSEXP, SEXP microSEXP, SEXP vegpSEXP, SEXP otherSEXP, SEXP matSEXP, SEXP outSEXP, SEXP ncoresSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type reqhgt(reqhgtSEXP);
+    Rcpp::traits::input_parameter< bool >::type Dynreqhgt(DynreqhgtSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type obstime(obstimeSEXP);
+    Rcpp::traits::input_parameter< List >::type climdata(climdataSEXP);
+    Rcpp::traits::input_parameter< List >::type snowm(snowmSEXP);
+    Rcpp::traits::input_parameter< List >::type micro(microSEXP);
+    Rcpp::traits::input_parameter< List >::type vegp(vegpSEXP);
+    Rcpp::traits::input_parameter< List >::type other(otherSEXP);
+    Rcpp::traits::input_parameter< double >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< std::vector<bool> >::type out(outSEXP);
+    Rcpp::traits::input_parameter< int >::type ncores(ncoresSEXP);
+    rcpp_result_gen = Rcpp::wrap(gridmicrosnow2Par(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out, ncores));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_microclimfPara_zeroplanedisCpp", (DL_FUNC) &_microclimfPara_zeroplanedisCpp, 2},
@@ -1030,6 +1072,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_microclimfPara_runmicro4Par", (DL_FUNC) &_microclimfPara_runmicro4Par, 17},
     {"_microclimfPara_gridmodelsnow1Par", (DL_FUNC) &_microclimfPara_gridmodelsnow1Par, 7},
     {"_microclimfPara_gridmodelsnow2Par", (DL_FUNC) &_microclimfPara_gridmodelsnow2Par, 7},
+    {"_microclimfPara_gridmicrosnow1Par", (DL_FUNC) &_microclimfPara_gridmicrosnow1Par, 11},
+    {"_microclimfPara_gridmicrosnow2Par", (DL_FUNC) &_microclimfPara_gridmicrosnow2Par, 11},
     {NULL, NULL, 0}
 };
 

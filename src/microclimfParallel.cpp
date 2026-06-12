@@ -1451,3 +1451,413 @@ List gridmodelsnow2Par(DataFrame obstime, List climdata, List pointm, List vegp,
     out["meltc"] = meltc; out["meltg"] = meltg;
     return out;
 }
+
+// ============================================================
+// GridMicroSnow1Worker: snow microclimate, data.frame climate
+// ============================================================
+struct GridMicroSnow1Worker : public Worker {
+    const RMatrix<double> pai_m, paia_m, hgt_m, ltra_m, clump_m, leafd_m, leafden_m;
+    const RMatrix<double> slope_m, aspect_m, skyview_m, Smax_m;
+    const RVector<double> wsa_v, hor_v;
+    const RVector<double> tc_v, rh_v, pk_v, Rsw_v, Rdif_v, Rlw_v, u2_v, umu_v;
+    const RVector<double> snowtempc_v, snowtempg_v, swe_v, sdepg_v, sden_v, Tzd_v;
+    const RMatrix<double> meanD_m;
+    const RVector<double> salb_v;
+    std::vector<double> zend_r, zenr_r, azid_r, azir_r;
+    std::vector<int>    sindex_r, windex_r;
+    double reqhgt, zref, mxtc, mat;
+    bool Dynreqhgt;
+    int rows, cols, tsteps, hiy;
+    std::vector<bool> out_r;
+    RVector<double> Tz_w, tleaf_w, relhum_w, soilm_w, uz_w;
+    RVector<double> Rdirdown_w, Rdifdown_w, Rlwdown_w, Rswup_w, Rlwup_w;
+
+    GridMicroSnow1Worker(
+        NumericMatrix pai, NumericMatrix paia, NumericMatrix hgt,
+        NumericMatrix ltra, NumericMatrix clump, NumericMatrix leafd, NumericMatrix leafden,
+        NumericMatrix slope, NumericMatrix aspect, NumericMatrix skyview, NumericMatrix Smax,
+        NumericVector wsa, NumericVector hor,
+        NumericVector tc, NumericVector rh, NumericVector pk,
+        NumericVector Rsw, NumericVector Rdif, NumericVector Rlw,
+        NumericVector u2, NumericVector umu,
+        NumericVector snowtempc, NumericVector snowtempg, NumericVector swe,
+        NumericVector sdepg, NumericVector sden, NumericVector Tzd,
+        NumericMatrix meanD, NumericVector salb,
+        std::vector<double> zend, std::vector<double> zenr,
+        std::vector<double> azid, std::vector<double> azir,
+        std::vector<int> sindex, std::vector<int> windex,
+        double reqhgt_, double zref_, double mxtc_, double mat_,
+        bool Dynreqhgt_, int rows_, int cols_, int tsteps_, int hiy_,
+        std::vector<bool> out,
+        NumericVector Tz, NumericVector tleaf, NumericVector relhum, NumericVector soilm,
+        NumericVector uz, NumericVector Rdirdown, NumericVector Rdifdown,
+        NumericVector Rlwdown, NumericVector Rswup, NumericVector Rlwup
+    ) :
+        pai_m(pai), paia_m(paia), hgt_m(hgt), ltra_m(ltra), clump_m(clump),
+        leafd_m(leafd), leafden_m(leafden),
+        slope_m(slope), aspect_m(aspect), skyview_m(skyview), Smax_m(Smax),
+        wsa_v(wsa), hor_v(hor),
+        tc_v(tc), rh_v(rh), pk_v(pk), Rsw_v(Rsw), Rdif_v(Rdif), Rlw_v(Rlw),
+        u2_v(u2), umu_v(umu),
+        snowtempc_v(snowtempc), snowtempg_v(snowtempg), swe_v(swe),
+        sdepg_v(sdepg), sden_v(sden), Tzd_v(Tzd),
+        meanD_m(meanD), salb_v(salb),
+        zend_r(std::move(zend)), zenr_r(std::move(zenr)),
+        azid_r(std::move(azid)), azir_r(std::move(azir)),
+        sindex_r(std::move(sindex)), windex_r(std::move(windex)),
+        reqhgt(reqhgt_), zref(zref_), mxtc(mxtc_), mat(mat_),
+        Dynreqhgt(Dynreqhgt_), rows(rows_), cols(cols_), tsteps(tsteps_), hiy(hiy_),
+        out_r(std::move(out)),
+        Tz_w(Tz), tleaf_w(tleaf), relhum_w(relhum), soilm_w(soilm), uz_w(uz),
+        Rdirdown_w(Rdirdown), Rdifdown_w(Rdifdown), Rlwdown_w(Rlwdown),
+        Rswup_w(Rswup), Rlwup_w(Rlwup)
+    {}
+
+    void operator()(std::size_t begin, std::size_t end) {
+        for (std::size_t cell = begin; cell < end; ++cell) {
+            int i = static_cast<int>(cell) % rows;
+            int j = static_cast<int>(cell) / rows;
+            if (std::isnan(hgt_m(i, j))) continue;
+            for (int k = 0; k < tsteps; ++k) {
+                int idx = i + rows * j + cols * rows * k;
+                if (swe_v[idx] > 0.0) {
+                    double reqhgts = Dynreqhgt ? reqhgt : (reqhgt - sdepg_v[idx]);
+                    if (reqhgts >= 0.0) {
+                        int shadowmask = 1;
+                        double ha = hor_v[sindex_r[k] * rows * cols + j * rows + i];
+                        double sa = (pi / 2.0) - zenr_r[k];
+                        double si = solarindexCpp(slope_m(i,j), aspect_m(i,j), zend_r[k], azid_r[k], true);
+                        if (std::isnan(si)) si = std::cos(zend_r[k] * torad);
+                        if (ha > std::tan(sa)) shadowmask = 0;
+                        double ws = wsa_v[windex_r[k] * rows * cols + j * rows + i];
+                        solmodel solp;
+                        solp.zend = zend_r[k]; solp.zenr = zenr_r[k];
+                        solp.azid = azid_r[k]; solp.azir = azir_r[k];
+                        double sdepc = swe_v[idx] / sden_v[idx];
+                        snowpoint2 snowp;
+                        snowp.snowtempg = snowtempg_v[idx]; snowp.snowtempc = snowtempc_v[idx];
+                        snowp.sdepc = sdepc; snowp.sdepg = sdepg_v[idx]; snowp.sdenc = sden_v[idx];
+                        snowp.albc = salb_v[k]; snowp.albg = salb_v[k];
+                        snowmicro apv = snowabovepoint(reqhgts, zref,
+                            tc_v[k], rh_v[k], pk_v[k], u2_v[k],
+                            Rsw_v[k], Rdif_v[k], Rlw_v[k],
+                            hgt_m(i,j), pai_m(i,j), paia_m(i,j), leafd_m(i,j),
+                            clump_m(i,j), ltra_m(i,j), leafden_m(i,j),
+                            solp, si, skyview_m(i,j), shadowmask, ws, umu_v[k], mxtc, snowp);
+                        if (out_r[0]) Tz_w[idx]        = apv.Tz;
+                        if (out_r[1]) tleaf_w[idx]     = apv.tleaf;
+                        if (out_r[2]) relhum_w[idx]    = apv.rh;
+                        if (out_r[4]) uz_w[idx]        = apv.uz;
+                        if (out_r[5]) Rdirdown_w[idx]  = apv.Rbdown;
+                        if (out_r[6]) Rdifdown_w[idx]  = apv.Rddown;
+                        if (out_r[7]) Rlwdown_w[idx]   = apv.Rlwdn;
+                        if (out_r[8]) Rswup_w[idx]     = apv.Rdup;
+                        if (out_r[9]) Rlwup_w[idx]     = apv.Rlwup;
+                    } else {
+                        double bpv = belowpointsnow(reqhgts, meanD_m(i,j),
+                            snowtempg_v[idx], Tzd_v[idx], mat, hiy);
+                        if (out_r[0]) Tz_w[idx]        = bpv;
+                        if (out_r[1]) tleaf_w[idx]     = bpv;
+                        if (out_r[2]) relhum_w[idx]    = 100.0;
+                        if (out_r[4]) uz_w[idx]        = 0.0;
+                        if (out_r[5]) Rdirdown_w[idx]  = 0.0;
+                        if (out_r[6]) Rdifdown_w[idx]  = 0.0;
+                        if (out_r[7]) Rlwdown_w[idx]   = 0.0;
+                        if (out_r[8]) Rswup_w[idx]     = 0.0;
+                        if (out_r[9]) Rlwup_w[idx]     = 0.0;
+                    }
+                    if (out_r[3]) soilm_w[idx] = Smax_m(i,j);
+                }
+            }
+        }
+    }
+};
+
+// [[Rcpp::export]]
+List gridmicrosnow1Par(double reqhgt, bool Dynreqhgt, DataFrame obstime,
+    DataFrame climdata, List snowm, List micro, List vegp, List other,
+    double mat, std::vector<bool> out, int ncores = 2)
+{
+    IntegerVector year = obstime["year"]; IntegerVector month = obstime["month"];
+    IntegerVector day  = obstime["day"];  NumericVector hour  = obstime["hour"];
+    NumericVector tc   = climdata["temp"];    NumericVector rh   = climdata["relhum"];
+    NumericVector pk   = climdata["pres"];    NumericVector Rsw  = climdata["swdown"];
+    NumericVector Rdif = climdata["difrad"];  NumericVector Rlw  = climdata["lwdown"];
+    NumericVector u2   = climdata["windspeed"]; NumericVector wdir = climdata["winddir"];
+    NumericVector prec = climdata["precip"]; NumericVector umu  = climdata["umu"];
+    NumericMatrix pai     = vegp["pai"];   NumericMatrix paia    = vegp["paia"];
+    NumericMatrix hgt     = vegp["hgt"];   NumericMatrix ltra    = vegp["leaft"];
+    NumericMatrix clump   = vegp["clump"]; NumericMatrix leafd   = vegp["leafd"];
+    NumericMatrix leafden = vegp["leafden"];
+    NumericMatrix slope   = other["slope"];   NumericMatrix aspect  = other["aspect"];
+    NumericMatrix skyview = other["skyview"]; NumericVector wsa     = other["wsa"];
+    NumericVector hor     = other["hor"];     double lat   = other["lat"];
+    double lon = other["lon"];               double zref  = other["zref"];
+    NumericMatrix Smax    = other["Smax"];
+    NumericVector snowtempc = snowm["Tc"];  NumericVector snowtempg = snowm["Tg"];
+    NumericVector swe       = snowm["totalSWE"];
+    NumericVector sdepg     = snowm["groundsnowdepth"];
+    NumericVector sden      = snowm["snowden"];
+    NumericVector Tzd  = snowdayan(snowm["Tg"]);
+    NumericMatrix meanD = meanDsnow(snowm["snowden"]);
+    int rows = pai.nrow(); int cols = pai.ncol(); int tsteps = tc.size();
+    double mxtc = -273.15;
+    std::vector<double> zend_v(tsteps), zenr_v(tsteps), azid_v(tsteps), azir_v(tsteps);
+    std::vector<int>    sindex_v(tsteps), windex_v(tsteps);
+    for (int k = 0; k < tsteps; ++k) {
+        if (tc[k] > mxtc) mxtc = tc[k];
+        solmodel sp = solpositionCpp(lat, lon, year[k], month[k], day[k], hour[k]);
+        zend_v[k] = sp.zend; zenr_v[k] = sp.zenr;
+        azid_v[k] = sp.azid; azir_v[k] = sp.azir;
+        sindex_v[k] = static_cast<int>(std::round(sp.azid / 15)) % 24;
+        windex_v[k] = static_cast<int>(std::round(wdir[k] / 45)) % 8;
+    }
+    NumericVector salb = snowalbCpp(prec);
+    int hiy = (year[0] % 4 == 0 && (year[0] % 100 != 0 || year[0] % 400 == 0)) ? 366 * 24 : 365 * 24;
+    int n3 = rows * cols * tsteps;
+    IntegerVector dim3 = {rows, cols, tsteps};
+    NumericVector Tz_o(n3, NA_REAL), tleaf_o(n3, NA_REAL), relhum_o(n3, NA_REAL);
+    NumericVector soilm_o(n3, NA_REAL), uz_o(n3, NA_REAL);
+    NumericVector Rdir_o(n3, NA_REAL), Rdif_o(n3, NA_REAL), Rlw_o(n3, NA_REAL);
+    NumericVector Rswup_o(n3, NA_REAL), Rlwup_o(n3, NA_REAL);
+    if (out[0]) { NumericVector t = micro["Tz"];        std::copy(t.begin(), t.end(), Tz_o.begin()); }
+    if (out[1]) { NumericVector t = micro["tleaf"];     std::copy(t.begin(), t.end(), tleaf_o.begin()); }
+    if (out[2]) { NumericVector t = micro["relhum"];    std::copy(t.begin(), t.end(), relhum_o.begin()); }
+    if (out[3]) { NumericVector t = micro["soilm"];     std::copy(t.begin(), t.end(), soilm_o.begin()); }
+    if (out[4]) { NumericVector t = micro["windspeed"]; std::copy(t.begin(), t.end(), uz_o.begin()); }
+    if (out[5]) { NumericVector t = micro["Rdirdown"];  std::copy(t.begin(), t.end(), Rdir_o.begin()); }
+    if (out[6]) { NumericVector t = micro["Rdifdown"];  std::copy(t.begin(), t.end(), Rdif_o.begin()); }
+    if (out[7]) { NumericVector t = micro["Rlwdown"];   std::copy(t.begin(), t.end(), Rlw_o.begin()); }
+    if (out[8]) { NumericVector t = micro["Rswup"];     std::copy(t.begin(), t.end(), Rswup_o.begin()); }
+    if (out[9]) { NumericVector t = micro["Rlwup"];     std::copy(t.begin(), t.end(), Rlwup_o.begin()); }
+    GridMicroSnow1Worker worker(
+        pai, paia, hgt, ltra, clump, leafd, leafden,
+        slope, aspect, skyview, Smax, wsa, hor,
+        tc, rh, pk, Rsw, Rdif, Rlw, u2, umu,
+        snowtempc, snowtempg, swe, sdepg, sden, Tzd, meanD, salb,
+        zend_v, zenr_v, azid_v, azir_v, sindex_v, windex_v,
+        reqhgt, zref, mxtc, mat, Dynreqhgt, rows, cols, tsteps, hiy, out,
+        Tz_o, tleaf_o, relhum_o, soilm_o, uz_o,
+        Rdir_o, Rdif_o, Rlw_o, Rswup_o, Rlwup_o);
+    parallelFor(0, rows * cols, worker, 1, ncores);
+    List outp;
+    if (out[0]) { Tz_o.attr("dim")     = dim3; outp["Tz"]        = Tz_o; }
+    if (out[1]) { tleaf_o.attr("dim")  = dim3; outp["tleaf"]     = tleaf_o; }
+    if (out[2]) { relhum_o.attr("dim") = dim3; outp["relhum"]    = relhum_o; }
+    if (out[3]) { soilm_o.attr("dim")  = dim3; outp["soilm"]     = soilm_o; }
+    if (out[4]) { uz_o.attr("dim")     = dim3; outp["windspeed"] = uz_o; }
+    if (out[5]) { Rdir_o.attr("dim")   = dim3; outp["Rdirdown"]  = Rdir_o; }
+    if (out[6]) { Rdif_o.attr("dim")   = dim3; outp["Rdifdown"]  = Rdif_o; }
+    if (out[7]) { Rlw_o.attr("dim")    = dim3; outp["Rlwdown"]   = Rlw_o; }
+    if (out[8]) { Rswup_o.attr("dim")  = dim3; outp["Rswup"]     = Rswup_o; }
+    if (out[9]) { Rlwup_o.attr("dim")  = dim3; outp["Rlwup"]     = Rlwup_o; }
+    return outp;
+}
+
+// ============================================================
+// GridMicroSnow2Worker: snow microclimate, array climate
+// ============================================================
+struct GridMicroSnow2Worker : public Worker {
+    const RMatrix<double> pai_m, paia_m, hgt_m, ltra_m, clump_m, leafd_m, leafden_m;
+    const RMatrix<double> slope_m, aspect_m, skyview_m, lats_m, lons_m, Smax_m;
+    const RVector<double> wsa_v, hor_v;
+    const RVector<double> tc_v, rh_v, pk_v, Rsw_v, Rdif_v, Rlw_v, u2_v, umu_v, prec_v;
+    const RVector<double> snowtempc_v, snowtempg_v, swe_v, sdepg_v, sden_v, Tzd_v;
+    const RMatrix<double> meanD_m;
+    std::vector<int>    windex_r, year_r, month_r, day_r;
+    std::vector<double> hour_r;
+    double reqhgt, zref, mat;
+    bool Dynreqhgt;
+    int rows, cols, tsteps, hiy;
+    std::vector<bool> out_r;
+    RVector<double> Tz_w, tleaf_w, relhum_w, soilm_w, uz_w;
+    RVector<double> Rdirdown_w, Rdifdown_w, Rlwdown_w, Rswup_w, Rlwup_w;
+
+    GridMicroSnow2Worker(
+        NumericMatrix pai, NumericMatrix paia, NumericMatrix hgt,
+        NumericMatrix ltra, NumericMatrix clump, NumericMatrix leafd, NumericMatrix leafden,
+        NumericMatrix slope, NumericMatrix aspect, NumericMatrix skyview,
+        NumericMatrix lats, NumericMatrix lons, NumericMatrix Smax,
+        NumericVector wsa, NumericVector hor,
+        NumericVector tc, NumericVector rh, NumericVector pk,
+        NumericVector Rsw, NumericVector Rdif, NumericVector Rlw,
+        NumericVector u2, NumericVector umu, NumericVector prec,
+        NumericVector snowtempc, NumericVector snowtempg, NumericVector swe,
+        NumericVector sdepg, NumericVector sden, NumericVector Tzd,
+        NumericMatrix meanD,
+        std::vector<int> windex, std::vector<int> year, std::vector<int> month,
+        std::vector<int> day, std::vector<double> hour,
+        double reqhgt_, double zref_, double mat_,
+        bool Dynreqhgt_, int rows_, int cols_, int tsteps_, int hiy_,
+        std::vector<bool> out,
+        NumericVector Tz, NumericVector tleaf, NumericVector relhum, NumericVector soilm,
+        NumericVector uz, NumericVector Rdirdown, NumericVector Rdifdown,
+        NumericVector Rlwdown, NumericVector Rswup, NumericVector Rlwup
+    ) :
+        pai_m(pai), paia_m(paia), hgt_m(hgt), ltra_m(ltra), clump_m(clump),
+        leafd_m(leafd), leafden_m(leafden),
+        slope_m(slope), aspect_m(aspect), skyview_m(skyview),
+        lats_m(lats), lons_m(lons), Smax_m(Smax),
+        wsa_v(wsa), hor_v(hor),
+        tc_v(tc), rh_v(rh), pk_v(pk), Rsw_v(Rsw), Rdif_v(Rdif), Rlw_v(Rlw),
+        u2_v(u2), umu_v(umu), prec_v(prec),
+        snowtempc_v(snowtempc), snowtempg_v(snowtempg), swe_v(swe),
+        sdepg_v(sdepg), sden_v(sden), Tzd_v(Tzd),
+        meanD_m(meanD),
+        windex_r(std::move(windex)), year_r(std::move(year)), month_r(std::move(month)),
+        day_r(std::move(day)), hour_r(std::move(hour)),
+        reqhgt(reqhgt_), zref(zref_), mat(mat_),
+        Dynreqhgt(Dynreqhgt_), rows(rows_), cols(cols_), tsteps(tsteps_), hiy(hiy_),
+        out_r(std::move(out)),
+        Tz_w(Tz), tleaf_w(tleaf), relhum_w(relhum), soilm_w(soilm), uz_w(uz),
+        Rdirdown_w(Rdirdown), Rdifdown_w(Rdifdown), Rlwdown_w(Rlwdown),
+        Rswup_w(Rswup), Rlwup_w(Rlwup)
+    {}
+
+    void operator()(std::size_t begin, std::size_t end) {
+        for (std::size_t cell = begin; cell < end; ++cell) {
+            int i = static_cast<int>(cell) % rows;
+            int j = static_cast<int>(cell) / rows;
+            if (std::isnan(hgt_m(i, j))) continue;
+            double mxtc = -273.15;
+            std::vector<int> hs(tsteps, 0);
+            for (int k = 0; k < tsteps; ++k) {
+                int idx = i + rows * j + cols * rows * k;
+                if (tc_v[idx] > mxtc) mxtc = tc_v[idx];
+                hs[k] = (k > 0) ? ((prec_v[idx] > 0.0) ? 0 : hs[k-1] + 1) : 0;
+            }
+            std::vector<double> salb(tsteps);
+            for (int k = 0; k < tsteps; ++k) {
+                // integer division hs[k]/24 matches snowalbCpp: log(0)=-inf → clamped to 0.95 for first 24h
+                salb[k] = (-9.8740 * std::log(static_cast<double>(hs[k] / 24)) + 78.3434) / 100.0;
+                if (salb[k] > 0.95) salb[k] = 0.95;
+                if (salb[k] < 0.1)  salb[k] = 0.1;
+            }
+            for (int k = 0; k < tsteps; ++k) {
+                int idx = i + rows * j + cols * rows * k;
+                if (swe_v[idx] > 0.0) {
+                    double reqhgts = Dynreqhgt ? reqhgt : (reqhgt - sdepg_v[idx]);
+                    if (reqhgts >= 0.0) {
+                        solmodel solp = solpositionCpp(lats_m(i,j), lons_m(i,j),
+                            year_r[k], month_r[k], day_r[k], hour_r[k]);
+                        int sindx = static_cast<int>(std::round(solp.azid / 15)) % 24;
+                        int shadowmask = 1;
+                        double ha = hor_v[sindx * rows * cols + j * rows + i];
+                        double sa = (pi / 2.0) - solp.zenr;
+                        double si = solarindexCpp(slope_m(i,j), aspect_m(i,j), solp.zend, solp.azid, true);
+                        if (std::isnan(si)) si = std::cos(solp.zenr);
+                        if (ha > std::tan(sa)) shadowmask = 0;
+                        double ws = wsa_v[windex_r[k] * rows * cols + j * rows + i];
+                        double sdepc = swe_v[idx] / sden_v[idx];
+                        snowpoint2 snowp;
+                        snowp.snowtempg = snowtempg_v[idx]; snowp.snowtempc = snowtempc_v[idx];
+                        snowp.sdepc = sdepc; snowp.sdepg = sdepg_v[idx]; snowp.sdenc = sden_v[idx];
+                        snowp.albc = salb[k]; snowp.albg = salb[k];
+                        snowmicro apv = snowabovepoint(reqhgts, zref,
+                            tc_v[idx], rh_v[idx], pk_v[idx], u2_v[idx],
+                            Rsw_v[idx], Rdif_v[idx], Rlw_v[idx],
+                            hgt_m(i,j), pai_m(i,j), paia_m(i,j), leafd_m(i,j),
+                            clump_m(i,j), ltra_m(i,j), leafden_m(i,j),
+                            solp, si, skyview_m(i,j), shadowmask, ws, umu_v[idx], mxtc, snowp);
+                        if (out_r[0]) Tz_w[idx]        = apv.Tz;
+                        if (out_r[1]) tleaf_w[idx]     = apv.tleaf;
+                        if (out_r[2]) relhum_w[idx]    = apv.rh;
+                        if (out_r[4]) uz_w[idx]        = apv.uz;
+                        if (out_r[5]) Rdirdown_w[idx]  = apv.Rbdown;
+                        if (out_r[6]) Rdifdown_w[idx]  = apv.Rddown;
+                        if (out_r[7]) Rlwdown_w[idx]   = apv.Rlwdn;
+                        if (out_r[8]) Rswup_w[idx]     = apv.Rdup;
+                        if (out_r[9]) Rlwup_w[idx]     = apv.Rlwup;
+                    } else {
+                        double bpv = belowpointsnow(reqhgts, meanD_m(i,j),
+                            snowtempg_v[idx], Tzd_v[idx], mat, hiy);
+                        if (out_r[0]) Tz_w[idx]        = bpv;
+                        if (out_r[1]) tleaf_w[idx]     = bpv;
+                        if (out_r[2]) relhum_w[idx]    = 100.0;
+                        if (out_r[4]) uz_w[idx]        = 0.0;
+                        if (out_r[5]) Rdirdown_w[idx]  = 0.0;
+                        if (out_r[6]) Rdifdown_w[idx]  = 0.0;
+                        if (out_r[7]) Rlwdown_w[idx]   = 0.0;
+                        if (out_r[8]) Rswup_w[idx]     = 0.0;
+                        if (out_r[9]) Rlwup_w[idx]     = 0.0;
+                    }
+                    if (out_r[3]) soilm_w[idx] = Smax_m(i,j);
+                }
+            }
+        }
+    }
+};
+
+// [[Rcpp::export]]
+List gridmicrosnow2Par(double reqhgt, bool Dynreqhgt, DataFrame obstime,
+    List climdata, List snowm, List micro, List vegp, List other,
+    double mat, std::vector<bool> out, int ncores = 2)
+{
+    IntegerVector year = obstime["year"]; IntegerVector month = obstime["month"];
+    IntegerVector day  = obstime["day"];  NumericVector hour  = obstime["hour"];
+    NumericVector tc   = climdata["temp"];    NumericVector rh   = climdata["relhum"];
+    NumericVector pk   = climdata["pres"];    NumericVector Rsw  = climdata["swdown"];
+    NumericVector Rdif = climdata["difrad"];  NumericVector Rlw  = climdata["lwdown"];
+    NumericVector u2   = climdata["windspeed"]; NumericVector wdir = climdata["winddir"];
+    NumericVector prec = climdata["prec"];   NumericVector umu  = climdata["umu"];
+    NumericMatrix pai     = vegp["pai"];   NumericMatrix paia    = vegp["paia"];
+    NumericMatrix hgt     = vegp["hgt"];   NumericMatrix ltra    = vegp["leaft"];
+    NumericMatrix clump   = vegp["clump"]; NumericMatrix leafd   = vegp["leafd"];
+    NumericMatrix leafden = vegp["leafden"];
+    NumericMatrix slope   = other["slope"];   NumericMatrix aspect  = other["aspect"];
+    NumericMatrix skyview = other["skyview"]; NumericVector wsa     = other["wsa"];
+    NumericVector hor     = other["hor"];     NumericMatrix lats    = other["lat"];
+    NumericMatrix lons    = other["lon"];     double zref           = other["zref"];
+    NumericMatrix Smax    = other["Smax"];
+    NumericVector snowtempc = snowm["Tc"];  NumericVector snowtempg = snowm["Tg"];
+    NumericVector swe       = snowm["totalSWE"];
+    NumericVector sdepg     = snowm["groundsnowdepth"];
+    NumericVector sden      = snowm["snowden"];
+    NumericVector Tzd  = snowdayan(snowm["Tg"]);
+    NumericMatrix meanD = meanDsnow(snowm["snowden"]);
+    int rows = pai.nrow(); int cols = pai.ncol(); int tsteps = hour.size();
+    int hiy = (year[0] % 4 == 0 && (year[0] % 100 != 0 || year[0] % 400 == 0)) ? 366 * 24 : 365 * 24;
+    std::vector<int> windex_v(tsteps);
+    for (int k = 0; k < tsteps; ++k)
+        windex_v[k] = static_cast<int>(std::round(wdir[k] / 45)) % 8;
+    std::vector<int> yv(tsteps), mv(tsteps), dv(tsteps); std::vector<double> hv(tsteps);
+    for (int k = 0; k < tsteps; ++k) { yv[k]=year[k]; mv[k]=month[k]; dv[k]=day[k]; hv[k]=hour[k]; }
+    int n3 = rows * cols * tsteps;
+    IntegerVector dim3 = {rows, cols, tsteps};
+    NumericVector Tz_o(n3, NA_REAL), tleaf_o(n3, NA_REAL), relhum_o(n3, NA_REAL);
+    NumericVector soilm_o(n3, NA_REAL), uz_o(n3, NA_REAL);
+    NumericVector Rdir_o(n3, NA_REAL), Rdif_o(n3, NA_REAL), Rlw_o(n3, NA_REAL);
+    NumericVector Rswup_o(n3, NA_REAL), Rlwup_o(n3, NA_REAL);
+    if (out[0]) { NumericVector t = micro["Tz"];        std::copy(t.begin(), t.end(), Tz_o.begin()); }
+    if (out[1]) { NumericVector t = micro["tleaf"];     std::copy(t.begin(), t.end(), tleaf_o.begin()); }
+    if (out[2]) { NumericVector t = micro["relhum"];    std::copy(t.begin(), t.end(), relhum_o.begin()); }
+    if (out[3]) { NumericVector t = micro["soilm"];     std::copy(t.begin(), t.end(), soilm_o.begin()); }
+    if (out[4]) { NumericVector t = micro["windspeed"]; std::copy(t.begin(), t.end(), uz_o.begin()); }
+    if (out[5]) { NumericVector t = micro["Rdirdown"];  std::copy(t.begin(), t.end(), Rdir_o.begin()); }
+    if (out[6]) { NumericVector t = micro["Rdifdown"];  std::copy(t.begin(), t.end(), Rdif_o.begin()); }
+    if (out[7]) { NumericVector t = micro["Rlwdown"];   std::copy(t.begin(), t.end(), Rlw_o.begin()); }
+    if (out[8]) { NumericVector t = micro["Rswup"];     std::copy(t.begin(), t.end(), Rswup_o.begin()); }
+    if (out[9]) { NumericVector t = micro["Rlwup"];     std::copy(t.begin(), t.end(), Rlwup_o.begin()); }
+    GridMicroSnow2Worker worker(
+        pai, paia, hgt, ltra, clump, leafd, leafden,
+        slope, aspect, skyview, lats, lons, Smax, wsa, hor,
+        tc, rh, pk, Rsw, Rdif, Rlw, u2, umu, prec,
+        snowtempc, snowtempg, swe, sdepg, sden, Tzd, meanD,
+        windex_v, yv, mv, dv, hv,
+        reqhgt, zref, mat, Dynreqhgt, rows, cols, tsteps, hiy, out,
+        Tz_o, tleaf_o, relhum_o, soilm_o, uz_o,
+        Rdir_o, Rdif_o, Rlw_o, Rswup_o, Rlwup_o);
+    parallelFor(0, rows * cols, worker, 1, ncores);
+    List outp;
+    if (out[0]) { Tz_o.attr("dim")     = dim3; outp["Tz"]        = Tz_o; }
+    if (out[1]) { tleaf_o.attr("dim")  = dim3; outp["tleaf"]     = tleaf_o; }
+    if (out[2]) { relhum_o.attr("dim") = dim3; outp["relhum"]    = relhum_o; }
+    if (out[3]) { soilm_o.attr("dim")  = dim3; outp["soilm"]     = soilm_o; }
+    if (out[4]) { uz_o.attr("dim")     = dim3; outp["windspeed"] = uz_o; }
+    if (out[5]) { Rdir_o.attr("dim")   = dim3; outp["Rdirdown"]  = Rdir_o; }
+    if (out[6]) { Rdif_o.attr("dim")   = dim3; outp["Rdifdown"]  = Rdif_o; }
+    if (out[7]) { Rlw_o.attr("dim")    = dim3; outp["Rlwdown"]   = Rlw_o; }
+    if (out[8]) { Rswup_o.attr("dim")  = dim3; outp["Rswup"]     = Rswup_o; }
+    if (out[9]) { Rlwup_o.attr("dim")  = dim3; outp["Rlwup"]     = Rlwup_o; }
+    return outp;
+}

@@ -17,7 +17,7 @@ dewpointCpp <- function(ea) {
     .Call(`_microclimfPara_dewpointCpp`, ea)
 }
 
-hourtodayCpp <- function(hourly, stat, rephour = TRUE) {
+hourtodayCpp <- function(hourly, stat, rephour) {
     .Call(`_microclimfPara_hourtodayCpp`, hourly, stat, rephour)
 }
 
@@ -219,5 +219,13 @@ gridmodelsnow1Par <- function(obstime, climdata, pointm, vegp, other, snowenv, n
 
 gridmodelsnow2Par <- function(obstime, climdata, pointm, vegp, other, snowenv, ncores = 2L) {
     .Call(`_microclimfPara_gridmodelsnow2Par`, obstime, climdata, pointm, vegp, other, snowenv, ncores)
+}
+
+gridmicrosnow1Par <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out, ncores = 2L) {
+    .Call(`_microclimfPara_gridmicrosnow1Par`, reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out, ncores)
+}
+
+gridmicrosnow2Par <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out, ncores = 2L) {
+    .Call(`_microclimfPara_gridmicrosnow2Par`, reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out, ncores)
 }
 
