@@ -4313,6 +4313,7 @@ List gridmodelsnow1(DataFrame obstime, DataFrame climdata, DataFrame pointm, Lis
                 double sdepcp = isnowdc(i, j);
                 double sdepgp = isnowdg(i, j);
                 meltc(i, j) = 0.0;
+                meltg(i, j) = 0.0;
                 for (int k = 0; k < tsteps; ++k) {
                     int idx = i + rows * j + cols * rows * k;
                     int snowtest = 0; // whether to run snow model
@@ -4373,7 +4374,6 @@ List gridmodelsnow1(DataFrame obstime, DataFrame climdata, DataFrame pointm, Lis
                         // Calculate cumulative snow melt in m
                         double melc = smod.mSc + smod.mMc + smod.mRc;
                         double melg = smod.mSg + smod.mMg + smod.mRg;
-                        meltc(i, j) = meltc(i, j) + melc;
                         meltc(i, j) = meltc(i, j) + (melc * 1000.0) / smod.sdenc;
                         meltg(i, j) = meltg(i, j) + (melg * 1000.0) / smod.sdeng;
                     } // end snowtest
@@ -4558,6 +4558,8 @@ List gridmodelsnow2(DataFrame obstime, List climdata, List pointm, List vegp,
                     sdp[3] * snowageg / 24.0)) + sdp[1]) * 1000.0;
                 double sdepcp = isnowdc(i, j);
                 double sdepgp = isnowdg(i, j);
+                meltc(i, j) = 0.0;
+                meltg(i, j) = 0.0;
                 for (int k = 0; k < tsteps; ++k) {
                     int idx = i + rows * j + cols * rows * k;
                     int snowtest = 0; // whether to run snow model
@@ -4623,7 +4625,6 @@ List gridmodelsnow2(DataFrame obstime, List climdata, List pointm, List vegp,
                         // Calculate cumulative snow melt in m
                         double melc = smod.mSc + smod.mMc + smod.mRc;
                         double melg = smod.mSg + smod.mMg + smod.mRg;
-                        meltc(i, j) = meltc(i, j) + melc;
                         meltc(i, j) = meltc(i, j) + (melc * 1000.0) / smod.sdenc;
                         meltg(i, j) = meltg(i, j) + (melg * 1000.0) / smod.sdeng;
                     } // end snowtest

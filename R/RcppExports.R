@@ -17,7 +17,7 @@ dewpointCpp <- function(ea) {
     .Call(`_microclimfPara_dewpointCpp`, ea)
 }
 
-hourtodayCpp <- function(hourly, stat, rephour) {
+hourtodayCpp <- function(hourly, stat, rephour = TRUE) {
     .Call(`_microclimfPara_hourtodayCpp`, hourly, stat, rephour)
 }
 

@@ -446,7 +446,7 @@ runmicro <- function(micropoint, reqhgt, vegp, soilc, dtm, dtmc = NA, altcorrect
 #' see [runmicro()]
 runmicro_big <- function(micropoint, reqhgt, pathout = getwd(), vegp, soilc, dtm, dtmc = NA, altcorrect = 0,
                          tilesize = NA, toverlap = 0, writeasnc = FALSE, runchecks = TRUE, pai_a = NA, tfact = 1.5,
-                         out = rep(TRUE,10)) {
+                         out = rep(TRUE,10), parallel = FALSE, ncores = 2) {
   # ============== Unpack and check data ===================================== #
   up<-.unpack(dtm,vegp,soilc)
   dtm<-up$dtm
@@ -517,7 +517,7 @@ runmicro_big <- function(micropoint, reqhgt, pathout = getwd(), vegp, soilc, dtm
         vegpi<-.listcrop(vegp,ext(dtmi))
         soilci<-.listcrop(soilc,ext(dtmi))
         mout<-suppressWarnings(runmicro(micropoint,reqhgt,vegpi,soilci,dtmi,dtmc,altcorrect,snow=FALSE,snowmod=NA,
-                       runchecks,pai_a,tfact,out,slri,apri,hori,twii,wsai,svf=svfi))
+                       runchecks,pai_a,tfact,out,slri,apri,hori,twii,wsai,svf=svfi,parallel=parallel,ncores=ncores))
         mout$tme<-tme
         # Write output
         rwt<-ifelse(rw<10,paste0("0",rw),paste0("",rw))

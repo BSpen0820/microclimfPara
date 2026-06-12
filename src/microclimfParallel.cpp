@@ -1077,6 +1077,7 @@ struct Snow1Worker : public Worker {
             double sdepcp = isnowdc_m(i,j);
             double sdepgp = isnowdg_m(i,j);
             meltc_w(i, j) = 0.0;
+            meltg_w(i, j) = 0.0;
             for (int k = 0; k < tsteps; ++k) {
                 int idx = i + rows * j + cols * rows * k;
                 int snowtest = 0;
@@ -1123,7 +1124,6 @@ struct Snow1Worker : public Worker {
                     snowagec = smod.snowagec; snowageg = smod.snowageg;
                     double melc = smod.mSc + smod.mMc + smod.mRc;
                     double melg = smod.mSg + smod.mMg + smod.mRg;
-                    meltc_w(i,j) = meltc_w(i,j) + melc;
                     meltc_w(i,j) = meltc_w(i,j) + (melc * 1000.0) / smod.sdenc;
                     meltg_w(i,j) = meltg_w(i,j) + (melg * 1000.0) / smod.sdeng;
                 } else {
@@ -1384,7 +1384,6 @@ struct Snow2Worker : public Worker {
                     snowagec = smod.snowagec; snowageg = smod.snowageg;
                     double melc = smod.mSc + smod.mMc + smod.mRc;
                     double melg = smod.mSg + smod.mMg + smod.mRg;
-                    meltc_w(i,j) = meltc_w(i,j) + melc;
                     meltc_w(i,j) = meltc_w(i,j) + (melc * 1000.0) / smod.sdenc;
                     meltg_w(i,j) = meltg_w(i,j) + (melg * 1000.0) / smod.sdeng;
                 } else {
