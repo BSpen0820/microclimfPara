@@ -1,0 +1,16 @@
+"file","name","dir","hash","identical_2_Base","identical_Toler_Base"
+"./Base_Results/micropointa_nosnow.rds","micropointa_nosnow","./Base_Results","a2ad1e67088bef6809cdeca409330170",NA,NA
+"./Base_Results/micropointa_snow.rds","micropointa_snow","./Base_Results","e983eb3f6cfcdad5460491c89349a1e2",NA,NA
+"./Base_Results/mout_nosnow.rds","mout_nosnow","./Base_Results","05f2f320ad3d972bacb8268dc8692006",NA,NA
+"./Base_Results/mout_snow.rds","mout_snow","./Base_Results","9d295077e4a59d8e39348fde7564b05a",NA,NA
+"./Base_Results/smod_snow.rds","smod_snow","./Base_Results","3baeac0bc4a7172d47663d48f565fa3e",NA,NA
+"./MicroPar_Par/micropointa_nosnow.rds","micropointa_nosnow","./MicroPar_Par","a2ad1e67088bef6809cdeca409330170",TRUE,TRUE
+"./MicroPar_Par/micropointa_snow.rds","micropointa_snow","./MicroPar_Par","e983eb3f6cfcdad5460491c89349a1e2",TRUE,TRUE
+"./MicroPar_Par/mout_nosnow.rds","mout_nosnow","./MicroPar_Par","be3672ba4bf5c96e1d2707f6df95058b",FALSE,TRUE
+"./MicroPar_Par/mout_snow.rds","mout_snow","./MicroPar_Par","f348fb3ca83320bd25efdcfd02efc6dd",FALSE,TRUE
+"./MicroPar_Par/smod_snow.rds","smod_snow","./MicroPar_Par","1a7a0b36b5ae2050265001ce1ea408c9",FALSE,TRUE
+"./MicroPar_Ser/micropointa_nosnow.rds","micropointa_nosnow","./MicroPar_Ser","a2ad1e67088bef6809cdeca409330170",TRUE,TRUE
+"./MicroPar_Ser/micropointa_snow.rds","micropointa_snow","./MicroPar_Ser","e983eb3f6cfcdad5460491c89349a1e2",TRUE,TRUE
+"./MicroPar_Ser/mout_nosnow.rds","mout_nosnow","./MicroPar_Ser","05f2f320ad3d972bacb8268dc8692006",TRUE,TRUE
+"./MicroPar_Ser/mout_snow.rds","mout_snow","./MicroPar_Ser","9d295077e4a59d8e39348fde7564b05a",TRUE,TRUE
+"./MicroPar_Ser/smod_snow.rds","smod_snow","./MicroPar_Ser","3baeac0bc4a7172d47663d48f565fa3e",TRUE,TRUE

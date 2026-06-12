@@ -16,4 +16,7 @@ Code_review_report.md
 Parallelisation_plan.md
 Validation_test/
 ClaudeTest_Validation/
-test/
+test/Base_Results/
+test/MicroPar_Ser/
+test/MicroPar_Par/
+.claude/
