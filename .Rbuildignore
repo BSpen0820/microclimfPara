@@ -7,4 +7,5 @@
 ^Code_review_report\.md$
 ^Parallelisation_plan\.md$
 ^Validation_test/
-^src/Makevars$
+^ClaudeTest_Validation/
+^test/

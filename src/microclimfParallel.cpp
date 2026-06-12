@@ -1333,6 +1333,8 @@ struct Snow2Worker : public Worker {
                 sdp_r[3] * snowageg / 24.0)) + sdp_r[1]) * 1000.0;
             double sdepcp = isnowdc_m(i,j);
             double sdepgp = isnowdg_m(i,j);
+            meltc_w(i,j) = 0.0;
+            meltg_w(i,j) = 0.0;
             for (int k = 0; k < tsteps; ++k) {
                 int idx = i + rows * j + cols * rows * k;
                 int snowtest = 0;
