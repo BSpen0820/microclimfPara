@@ -21,6 +21,8 @@ LazyData: true
 LinkingTo: Rcpp,
     RcppParallel
 Imports: abind,
+  future,
+  future.apply,
   ncdf4,
   Rcpp,
   RcppParallel,

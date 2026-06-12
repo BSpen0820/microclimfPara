@@ -206,7 +206,8 @@ runpointmodel<-function(weather, reqhgt = 0.05, dtm, vegp, soilc, runchecks = TR
 #' # Takes ~15 seconds to run
 #' pointmodela <- runpointmodela(climarrayr, tme, reqhgt = 0.05, dtm, vegp, soilc)
 runpointmodela<-function(climarrayr, tme, reqhgt = 0.05, dtm, vegp, soilc, matemp = NA,
-                         zref = 2, windhgt = 2, soilm = NA, dTmx = 25, maxiter = 20, yearG = TRUE)  {
+                         zref = 2, windhgt = 2, soilm = NA, dTmx = 25, maxiter = 20, yearG = TRUE,
+                         parallel = FALSE, ncores = 2)  {
   # Unpack fine-res rasters
   up<-.unpack(dtm,vegp,soilc)
   dtm<-up$dtm
@@ -240,25 +241,75 @@ runpointmodela<-function(climarrayr, tme, reqhgt = 0.05, dtm, vegp, soilc, matem
   ll<-.latslonsfromr(r)
   lats<-ll$lats
   lons<-ll$lons
-  k<-1
-  pointo<-list()
   soiltype<-.getmode(.is(soilc$soiltype))
-  for (i in 1:dim(r)[1]) {
-    for (j in 1:dim(r)[2]) {
-      climdf<-.todf(climarrayr,i,j,tme,wdir)
-      if (class(soilm) == "logical") {
-        soilmo<-NA
-      } else soilmo<-soilm[i,j,]
-      if (is.na(climdf$temp[1]) == FALSE & is.na(.is(vegp$hgt)[i,j]) == FALSE) {
-        vegp_p<-.tovp(vegp,i,j)
-        gp<-.togp(soilc,i,j)
-        groundp_p<-gp$groundp_p
-        pointo[[k]]<-runpointmodel(climdf,reqhgt,dtm,vegp,soilc,runchecks = FALSE,zref,windhgt,soilmo,matemp,dTmx,maxiter,yearG,
-                                   lats[i,j],lons[i,j],vegp_p,groundp_p,soiltype,mxhgt)
-      } else pointo[[k]]<-NA
-      k<-k+1
-      utils::setTxtProgressBar(pb,(i-1)*dim(r)[2]+j)
+  if (!parallel) {
+    k<-1
+    pointo<-list()
+    for (i in 1:dim(r)[1]) {
+      for (j in 1:dim(r)[2]) {
+        climdf<-.todf(climarrayr,i,j,tme,wdir)
+        if (class(soilm) == "logical") {
+          soilmo<-NA
+        } else soilmo<-soilm[i,j,]
+        if (is.na(climdf$temp[1]) == FALSE & is.na(.is(vegp$hgt)[i,j]) == FALSE) {
+          vegp_p<-.tovp(vegp,i,j)
+          gp<-.togp(soilc,i,j)
+          groundp_p<-gp$groundp_p
+          pointo[[k]]<-runpointmodel(climdf,reqhgt,dtm,vegp,soilc,runchecks = FALSE,zref,windhgt,soilmo,matemp,dTmx,maxiter,yearG,
+                                     lats[i,j],lons[i,j],vegp_p,groundp_p,soiltype,mxhgt)
+        } else pointo[[k]]<-NA
+        k<-k+1
+        utils::setTxtProgressBar(pb,(i-1)*dim(r)[2]+j)
+      }
     }
+  } else {
+    close(pb)
+    nr <- dim(r)[1]
+    nc <- dim(r)[2]
+    cell_list <- vector("list", nr * nc)
+    k <- 1L
+    for (i in seq_len(nr)) {
+      for (j in seq_len(nc)) {
+        climdf <- .todf(climarrayr, i, j, tme, wdir)
+        soilmo <- if (class(soilm) == "logical") NA else soilm[i, j, ]
+        if (!is.na(climdf$temp[1]) && !is.na(.is(vegp$hgt)[i, j])) {
+          vegp_p    <- .tovp(vegp, i, j)
+          gp        <- .togp(soilc, i, j)
+          groundp_p <- gp$groundp_p
+          cell_list[[k]] <- list(climdf = climdf, soilmo = soilmo,
+                                 lat = lats[i, j], lon = lons[i, j],
+                                 vegp_p = vegp_p, groundp_p = groundp_p,
+                                 valid = TRUE)
+        } else {
+          cell_list[[k]] <- list(valid = FALSE)
+        }
+        k <- k + 1L
+      }
+    }
+    # Pack SpatRasters so they survive multisession serialization
+    dtm_p  <- terra::wrap(dtm)
+    vegp_p_env <- vegp
+    for (.nm in names(vegp_p_env)) {
+      if (inherits(vegp_p_env[[.nm]], "SpatRaster"))
+        vegp_p_env[[.nm]] <- terra::wrap(vegp_p_env[[.nm]])
+    }
+    soilc_p <- soilc
+    for (.nm in names(soilc_p)) {
+      if (inherits(soilc_p[[.nm]], "SpatRaster"))
+        soilc_p[[.nm]] <- terra::wrap(soilc_p[[.nm]])
+    }
+    oplan <- future::plan()
+    on.exit(future::plan(oplan), add = TRUE)
+    future::plan(future::multisession, workers = ncores)
+    pointo <- future.apply::future_lapply(cell_list, function(cell) {
+      if (!cell$valid) return(NA)
+      runpointmodel(cell$climdf, reqhgt, dtm_p, vegp_p_env, soilc_p,
+                    runchecks = FALSE, zref, windhgt, cell$soilmo,
+                    matemp, dTmx, maxiter, yearG,
+                    cell$lat, cell$lon,
+                    cell$vegp_p, cell$groundp_p,
+                    soiltype, mxhgt)
+    }, future.seed = NULL)
   }
   return(pointo)
 }
