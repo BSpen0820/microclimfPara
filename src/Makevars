@@ -1,2 +1,2 @@
 PKG_CXXFLAGS += -ffp-contract=off
-PKG_LIBS += $(shell "${R_HOME}/bin${R_ARCH_BIN}/Rscript" -e "cat(RcppParallel::RcppParallelLibs())")
+PKG_LIBS += $(shell ${R_HOME}/bin/Rscript -e "RcppParallel::RcppParallelLibs()")

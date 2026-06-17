@@ -47,6 +47,7 @@
 #' time increment of `weather`. Other vegetation paramaters are assumed time-invarient.
 #' @import stats
 #' @importFrom Rcpp sourceCpp
+#' @importFrom RcppParallel RcppParallelLibs
 #' @useDynLib microclimfPara, .registration = TRUE
 #' @export
 #' @rdname runpointmodel

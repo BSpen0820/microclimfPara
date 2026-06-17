@@ -19,7 +19,9 @@ runmicro_big(
   runchecks = TRUE,
   pai_a = NA,
   tfact = 1.5,
-  out = rep(TRUE, 10)
+  out = rep(TRUE, 10),
+  parallel = FALSE,
+  ncores = 2
 )
 }
 \arguments{

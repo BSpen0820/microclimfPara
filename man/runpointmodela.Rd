@@ -17,7 +17,9 @@ runpointmodela(
   soilm = NA,
   dTmx = 25,
   maxiter = 20,
-  yearG = TRUE
+  yearG = TRUE,
+  parallel = FALSE,
+  ncores = 2
 )
 }
 \arguments{
