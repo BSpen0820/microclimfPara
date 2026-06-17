@@ -1,2 +1,0 @@
-PKG_CXXFLAGS += -ffp-contract=off
-PKG_LIBS = @RCPPPARALLEL_LDFLAGS@
