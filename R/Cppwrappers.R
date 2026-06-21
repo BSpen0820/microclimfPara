@@ -122,6 +122,7 @@ runpointmodel<-function(weather, reqhgt = 0.05, dtm, vegp, soilc, runchecks = TR
     if (is.na(soiltype)) {
       ii<-.getmode(.is(soilc$soiltype))
     } else ii<-soiltype
+    soilparamsp <- .pkgdata("soilparamsp")
     soilm<-soilmCpp(weather,soilparamsp$rmu[ii],soilparamsp$mult[ii],soilparamsp$pwr[ii],
                     soilparamsp$Smax[ii],soilparamsp$Smin[ii],soilparamsp$Ksat[ii],
                     soilparamsp$a[ii])

@@ -300,8 +300,25 @@
   names(vegp2)<-names(vegp)
   return(vegp2)
 }
+# Session cache for bundled datasets (created once when the namespace loads).
+.datacache <- new.env(parent = emptyenv())
+
+# Robustly fetch a bundled dataset by name. Lazy data in data/ is only visible
+# by bare name when the package is ATTACHED; when called via microclimfPara::
+# from another package it is not. utils::data() works in both cases. Cached so
+# repeated per-cell calls (e.g. .togp) don't re-read each time.
+# NB: package name is hardcoded - update if the package is renamed.
+.pkgdata <- function(name) {
+  if (!exists(name, envir = .datacache, inherits = FALSE)) {
+    e <- new.env()
+    utils::data(list = name, package = "microclimfPara", envir = e)
+    assign(name, get(name, envir = e), envir = .datacache)
+  }
+  get(name, envir = .datacache, inherits = FALSE)
+}
 #' initialises soil parameters
 .soilinit <- function(soilc) {
+  soilparameters <- .pkgdata("soilparameters")
   .sortc<-function(varn,invar,soilc,u) {
     nms1<-names(soilc)
     s<-which(nms1 == varn)
@@ -336,6 +353,7 @@
 }
 # Sort out soil parameters
 .sortsoilc<-function(soilc,method="P") {
+  soilparamsp <- .pkgdata("soilparamsp")
   soilcl<-.soilinit(soilc)
   if (method == "P") {
     sn<-.getmode(as.vector(soilc$soiltype))
@@ -418,6 +436,7 @@
 }
 #' used by runpointmodela
 .togp<-function(soilc,i,j) {
+  soilparameters <- .pkgdata("soilparameters")
   sn<-.is(soilc$soiltype)[i,j]
   soiltype<-soilparameters$Soil.type[sn]
   # Create list of soil parameters
