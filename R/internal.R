@@ -1366,9 +1366,14 @@ flowacc<-function (dtm, basins = NA) {
     out2<-c(1,0,0,1,0,0,0,0,0,0)
     out<-out2*out
   }
-  # Free unpacked rasters / intermediates no longer needed before the C++
-  # output allocation (the memory peak). gc() called silently.
+  # Free unpacked rasters and large climate intermediates no longer needed
+  # before the C++ output allocation (the memory peak). The listed transient
+  # arrays (relhum, pk, wind components, altitude-correction temporaries) are
+  # NOT passed to C++, so releasing them here is numerically identical and
+  # removes them from co-residency with the output arrays. gc() silently.
   rm(up, cv, soilp, fd)
+  rm(list = intersect(c("relhum", "pk", "u2", "wd", "wu", "wv", "wuv", "wvv",
+                        "psl", "dc", "elevd", "lr", "tcdif"), ls()))
   invisible(gc(verbose = FALSE))
   if (parallel) {
     mout<-runmicro2Par(obstime,climdata,pointm,vegp,soilc,reqhgt,zref,ll$lats,ll$lons,Sminp,Smaxp,tfact,complete,matemp,out,ncores)
@@ -1680,9 +1685,14 @@ flowacc<-function (dtm, basins = NA) {
     out2<-c(1,0,0,1,0,0,0,0,0,0)
     out<-out2*out
   }
-  # Free unpacked rasters / intermediates no longer needed before the C++
-  # output allocation (the memory peak). gc() called silently.
+  # Free unpacked rasters and large climate intermediates no longer needed
+  # before the C++ output allocation (the memory peak). The listed transient
+  # arrays (relhum, pk, wind components, altitude-correction temporaries) are
+  # NOT passed to C++, so releasing them here is numerically identical and
+  # removes them from co-residency with the output arrays. gc() silently.
   rm(up, cv, soilp, fd)
+  rm(list = intersect(c("relhum", "pk", "u2", "wd", "wu", "wv", "wuv", "wvv",
+                        "psl", "dc", "elevd", "lr", "tcdif"), ls()))
   invisible(gc(verbose = FALSE))
   if (parallel) {
     mout<-runmicro4Par(dflyr,obstime,climdata,pointm,vegp,soilc,reqhgt,zref,ll$lats,ll$lons,Sminp,Smaxp,tfact,complete,matemp,out,ncores)
@@ -3733,15 +3743,20 @@ flowacc<-function (dtm, basins = NA) {
     # (5c) merge the two datasets
     mout<-list()
     n<-length(nosnowh)+length(snowh)
-    for (i in 1:length(moutn))  {
+    nm<-names(moutn)
+    L<-length(moutn)
+    for (i in 1:L)  {
       # Create blank entry for storing data
       mout[[i]]<-array(NA,dim=c(dim(dtm)[1:2],n))
-      # perform subset of nosnow
-      xx<-moutn[[i]][,,s1]
-      mout[[i]][,,nosnowh]<-xx
+      # perform subset of nosnow (index directly - no temporary copy)
+      mout[[i]][,,nosnowh]<-moutn[[i]][,,s1]
       mout[[i]][,,snowh]<-mouts[[i]]
+      # release the consumed input arrays to cut the merge memory peak.
+      # Assign NA (not NULL) so the list length/indexing is preserved.
+      moutn[[i]]<-NA
+      mouts[[i]]<-NA
     }
-    names(mout)<-names(moutn)
+    names(mout)<-nm
   }
   utils::setTxtProgressBar(pb,5)
   return(mout)
@@ -3827,15 +3842,20 @@ flowacc<-function (dtm, basins = NA) {
     # (5c) merge the two datasets
     mout<-list()
     n<-length(nosnowh)+length(snowh)
-    for (i in 1:length(moutn))  {
-      # Create blank entry for storin g data
+    nm<-names(moutn)
+    L<-length(moutn)
+    for (i in 1:L)  {
+      # Create blank entry for storing data
       mout[[i]]<-array(NA,dim=c(dim(dtm)[1:2],n))
-      # perform subset of nosnow
-      xx<-moutn[[i]][,,s1]
-      mout[[i]][,,nosnowh]<-xx
+      # perform subset of nosnow (index directly - no temporary copy)
+      mout[[i]][,,nosnowh]<-moutn[[i]][,,s1]
       mout[[i]][,,snowh]<-mouts[[i]]
+      # release the consumed input arrays to cut the merge memory peak.
+      # Assign NA (not NULL) so the list length/indexing is preserved.
+      moutn[[i]]<-NA
+      mouts[[i]]<-NA
     }
-    names(mout)<-names(moutn)
+    names(mout)<-nm
   }
   utils::setTxtProgressBar(pb,6)
   return(mout)
