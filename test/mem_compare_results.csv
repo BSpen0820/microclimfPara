@@ -1,0 +1,8 @@
+"version","scenario","peak_r_mb","peak_rss_mb","rss_pre_mb","elapsed_s"
+"after","micro_tz_par",351,481.4,277.6,49.8
+"after","micro_full_par",1854.8,1945.4,277,62
+"after","runsnow_par",218.9,335.3,275.9,3.6
+"after","micro_snow_par",350,464,300.8,6.5
+"before","micro_tz_par",1854.8,1947.3,277.8,59.4
+"before","micro_full_par",1854.8,1947.4,277.4,62.4
+"before","runsnow_par",258.7,351.1,276.1,4.9
