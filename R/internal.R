@@ -1184,6 +1184,10 @@ flowacc<-function (dtm, basins = NA) {
     out<-out2*out
   }
   matemp<-micropoint$matemp
+  # Free unpacked rasters / intermediates no longer needed before the C++
+  # output allocation (the memory peak). gc() called silently.
+  rm(up, cv, soilp, fd)
+  invisible(gc(verbose = FALSE))
   if (parallel) {
     mout<-runmicro1Par(obstime,weather,pointm,vegp,soilc,reqhgt,micropoint$zref,ll$lat,ll$long,Sminp,Smaxp,tfact,complete,matemp,out,ncores)
   } else {
@@ -1362,6 +1366,10 @@ flowacc<-function (dtm, basins = NA) {
     out2<-c(1,0,0,1,0,0,0,0,0,0)
     out<-out2*out
   }
+  # Free unpacked rasters / intermediates no longer needed before the C++
+  # output allocation (the memory peak). gc() called silently.
+  rm(up, cv, soilp, fd)
+  invisible(gc(verbose = FALSE))
   if (parallel) {
     mout<-runmicro2Par(obstime,climdata,pointm,vegp,soilc,reqhgt,zref,ll$lats,ll$lons,Sminp,Smaxp,tfact,complete,matemp,out,ncores)
   } else {
@@ -1482,6 +1490,10 @@ flowacc<-function (dtm, basins = NA) {
     out<-out2*out
   }
   matemp<-micropoint$matemp
+  # Free unpacked rasters / intermediates no longer needed before the C++
+  # output allocation (the memory peak). gc() called silently.
+  rm(up, cv, soilp, fd)
+  invisible(gc(verbose = FALSE))
   if (parallel) {
     mout<-runmicro3Par(dflyr,obstime,weather,pointm,vegp,soilc,reqhgt,micropoint$zref,ll$lat,ll$long,Sminp,Smaxp,tfact,complete,matemp,out,ncores)
   } else {
@@ -1668,6 +1680,10 @@ flowacc<-function (dtm, basins = NA) {
     out2<-c(1,0,0,1,0,0,0,0,0,0)
     out<-out2*out
   }
+  # Free unpacked rasters / intermediates no longer needed before the C++
+  # output allocation (the memory peak). gc() called silently.
+  rm(up, cv, soilp, fd)
+  invisible(gc(verbose = FALSE))
   if (parallel) {
     mout<-runmicro4Par(dflyr,obstime,climdata,pointm,vegp,soilc,reqhgt,zref,ll$lats,ll$lons,Sminp,Smaxp,tfact,complete,matemp,out,ncores)
   } else {
@@ -2652,6 +2668,9 @@ flowacc<-function (dtm, basins = NA) {
     dtms<-dtm+.rast(snowdepg[,,nnn],dtm)
     setTxtProgressBar(pb, day)
     ## NB need to return snow age from c++ code
+    # Free per-chunk arrays before the next chunk's grid call. gc() silent.
+    rm(smod, asd, dsnow, dsnow2, sss, asc, cdsnow)
+    invisible(gc(verbose = FALSE))
   }
   setTxtProgressBar(pb, n5days)
   return(list(Tc=Tc,Tg=Tg,groundsnowdepth=snowdepg,totalSWE=swe,snowden=sden,umu=pointm$umu))
@@ -2815,6 +2834,9 @@ flowacc<-function (dtm, basins = NA) {
     other$isnowdc <- sdc[,,24]
     other$isnowdg <- sdg[,,24]
     utils::setTxtProgressBar(pb, day)
+    # Free per-chunk arrays before the next chunk's grid call. gc() silent.
+    rm(smod, dsnow, dsnowg, dsnowc, dsnowg2, dsnowc2, sdc, sdg)
+    invisible(gc(verbose = FALSE))
   }
   swe<-sdepc*sden
   return(list(Tc=Tc,Tg=Tg,groundsnowdepth=sdepg,totalSWE=swe,snowden=sden,umu=pointm$umu))
@@ -3054,6 +3076,9 @@ flowacc<-function (dtm, basins = NA) {
     nnn<-s[length(s)]
     dtms<-dtm+.rast(snowdepg[,,nnn],dtm)
     utils::setTxtProgressBar(pb, day+n5days)
+    # Free per-chunk array subsets before the next chunk's grid call. gc() silent.
+    rm(smod, climdata1, pointm1, asd, dsnow, dsnow2, sss, asc, cdsnow)
+    invisible(gc(verbose = FALSE))
   }
   setTxtProgressBar(pb, n5days*2)
   smod<-list(Tc=Tc,Tg=Tg,groundsnowdepth=snowdepg,totalSWE=swe,snowden=sden,umu=pointm$umu)
@@ -3330,6 +3355,9 @@ flowacc<-function (dtm, basins = NA) {
     other$isnowdc <- sdc[,,24]
     other$isnowdg <- sdg[,,24]
     utils::setTxtProgressBar(pb, 0.5*day+ndays*1.5)
+    # Free per-chunk array subsets before the next chunk's grid call. gc() silent.
+    rm(smod, climdata1, pointm1, dsnow, dsnowg, dsnowc, dsnowg2, dsnowc2, sdc, sdg)
+    invisible(gc(verbose = FALSE))
   }
   # Recalculate as mm snow water equivelent
   swe<-sdepc*sden
@@ -3383,6 +3411,7 @@ flowacc<-function (dtm, basins = NA) {
   } else {
     up<-.unpack(dtm,vegp,soilc)
     dmx<-.vegpdmx(up$vegp)
+    rm(up); invisible(gc(verbose = FALSE))  # up only needed for dmx; free before model run
     if (dmx == 1) {  # temporally invarient vegetation
       if (class(micropoint) == "micropoint") { # data.frame climate input
         mout<-.runmodel1Cpp(micropoint,vegp,soilc,dtm,reqhgt,runchecks,pai_a,tfact,out,slr,apr,hor,twi,wsa,parallel=parallel,ncores=ncores)
@@ -3466,7 +3495,7 @@ flowacc<-function (dtm, basins = NA) {
   s<-1
   if (res(dtm)[1]<=100) s<-10
   if (class(wsa)[1] == "logical") {
-    other$wsa<-.windsheltera(dtm,micropoint$zref,s)
+    other$wsa<-.windsheltera(dtm,micropoints$zref,s)
   } else other$wsa<-wsa
   other$lat<-ll$lat
   other$lon<-ll$lon
@@ -3680,6 +3709,9 @@ flowacc<-function (dtm, basins = NA) {
     } else {
       mouts<-gridmicrosnow1(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,micropoint$matemp,out)
     }
+    # snow inputs consumed; free before merging the full output. gc() silent.
+    rm(snowin, smods)
+    invisible(gc(verbose = FALSE))
   }
   utils::setTxtProgressBar(pb,4)
   if (length(nosnowdays) == 0) {
@@ -3771,6 +3803,9 @@ flowacc<-function (dtm, basins = NA) {
     } else {
       mouts<-gridmicrosnow2(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,matemp,out)
     }
+    # snow inputs consumed; free before merging the full output. gc() silent.
+    rm(snowin, smods)
+    invisible(gc(verbose = FALSE))
     utils::setTxtProgressBar(pb,5)
   }
   if (length(nosnowdays) == 0) {

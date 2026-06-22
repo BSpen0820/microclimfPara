@@ -204,10 +204,21 @@ List runmicro1Par(DataFrame obstime, DataFrame climdata, DataFrame pointm, List 
     NumericMatrix tadd = soildCppm(twi, Sminp, Smaxp, tfact);
     std::vector<double> Tgp2 = as<std::vector<double>>(Tgp);
     std::vector<double> Tbp2 = as<std::vector<double>>(Tbp);
-    NumericVector Tz(n, NA_REAL), tleaf(n, NA_REAL), relhum(n, NA_REAL);
-    NumericVector soilmv(n, NA_REAL), uz(n, NA_REAL);
-    NumericVector Rdirdown(n, NA_REAL), Rdifdown(n, NA_REAL), Rlwdown(n, NA_REAL);
-    NumericVector Rswup(n, NA_REAL), Rlwup(n, NA_REAL);
+    // Only allocate the output arrays actually requested in `out`. All worker
+    // writes are guarded by out_r[k], so unrequested outputs (left empty) are
+    // never indexed. Mirrors serial runmicro1-4Cpp; cuts peak output memory by
+    // up to 10x when few layers are requested.
+    NumericVector Tz, tleaf, relhum, soilmv, uz, Rdirdown, Rdifdown, Rlwdown, Rswup, Rlwup;
+    if (out[0]) Tz       = NumericVector(n, NA_REAL);
+    if (out[1]) tleaf    = NumericVector(n, NA_REAL);
+    if (out[2]) relhum   = NumericVector(n, NA_REAL);
+    if (out[3]) soilmv   = NumericVector(n, NA_REAL);
+    if (out[4]) uz       = NumericVector(n, NA_REAL);
+    if (out[5]) Rdirdown = NumericVector(n, NA_REAL);
+    if (out[6]) Rdifdown = NumericVector(n, NA_REAL);
+    if (out[7]) Rlwdown  = NumericVector(n, NA_REAL);
+    if (out[8]) Rswup    = NumericVector(n, NA_REAL);
+    if (out[9]) Rlwup    = NumericVector(n, NA_REAL);
     Micro1Worker worker(
         hgt, pai, x, gsmax, lref, ltra, clump, leafd, paia, leafden,
         Smin, Smax, gref, soilb, Psie, Vq, Vm, Mc, rho, slope, aspect, svfa, tadd,
@@ -449,10 +460,21 @@ List runmicro2Par(DataFrame obstime, List climdata, List pointm, List vegp, List
     std::vector<int> yv(tsteps), mv(tsteps), dv(tsteps);
     std::vector<double> hv(tsteps);
     for (int k = 0; k < tsteps; ++k) { yv[k]=year[k]; mv[k]=month[k]; dv[k]=day[k]; hv[k]=hour[k]; }
-    NumericVector Tz(n, NA_REAL), tleaf(n, NA_REAL), relhum(n, NA_REAL);
-    NumericVector soilmv(n, NA_REAL), uz(n, NA_REAL);
-    NumericVector Rdirdown(n, NA_REAL), Rdifdown(n, NA_REAL), Rlwdown(n, NA_REAL);
-    NumericVector Rswup(n, NA_REAL), Rlwup(n, NA_REAL);
+    // Only allocate the output arrays actually requested in `out`. All worker
+    // writes are guarded by out_r[k], so unrequested outputs (left empty) are
+    // never indexed. Mirrors serial runmicro1-4Cpp; cuts peak output memory by
+    // up to 10x when few layers are requested.
+    NumericVector Tz, tleaf, relhum, soilmv, uz, Rdirdown, Rdifdown, Rlwdown, Rswup, Rlwup;
+    if (out[0]) Tz       = NumericVector(n, NA_REAL);
+    if (out[1]) tleaf    = NumericVector(n, NA_REAL);
+    if (out[2]) relhum   = NumericVector(n, NA_REAL);
+    if (out[3]) soilmv   = NumericVector(n, NA_REAL);
+    if (out[4]) uz       = NumericVector(n, NA_REAL);
+    if (out[5]) Rdirdown = NumericVector(n, NA_REAL);
+    if (out[6]) Rdifdown = NumericVector(n, NA_REAL);
+    if (out[7]) Rlwdown  = NumericVector(n, NA_REAL);
+    if (out[8]) Rswup    = NumericVector(n, NA_REAL);
+    if (out[9]) Rlwup    = NumericVector(n, NA_REAL);
     Micro2Worker worker(
         hgt, pai, x, gsmax, lref, ltra, clump, leafd, paia, leafden,
         Smin, Smax, gref, soilb, Psie, Vq, Vm, Mc, rho, slope, aspect, svfa, tadd, lats, lons,
@@ -702,10 +724,21 @@ List runmicro3Par(DataFrame dfsel, DataFrame obstime, DataFrame climdata, DataFr
     std::vector<double> Tbp2 = as<std::vector<double>>(Tbp);
     std::vector<int> lyr_v(nlyrs), st_v(nlyrs);
     for (int i = 0; i < nlyrs; ++i) { lyr_v[i] = lyr[i]; st_v[i] = st[i]; }
-    NumericVector Tz(n, NA_REAL), tleaf(n, NA_REAL), relhum(n, NA_REAL);
-    NumericVector soilmv(n, NA_REAL), uz(n, NA_REAL);
-    NumericVector Rdirdown(n, NA_REAL), Rdifdown(n, NA_REAL), Rlwdown(n, NA_REAL);
-    NumericVector Rswup(n, NA_REAL), Rlwup(n, NA_REAL);
+    // Only allocate the output arrays actually requested in `out`. All worker
+    // writes are guarded by out_r[k], so unrequested outputs (left empty) are
+    // never indexed. Mirrors serial runmicro1-4Cpp; cuts peak output memory by
+    // up to 10x when few layers are requested.
+    NumericVector Tz, tleaf, relhum, soilmv, uz, Rdirdown, Rdifdown, Rlwdown, Rswup, Rlwup;
+    if (out[0]) Tz       = NumericVector(n, NA_REAL);
+    if (out[1]) tleaf    = NumericVector(n, NA_REAL);
+    if (out[2]) relhum   = NumericVector(n, NA_REAL);
+    if (out[3]) soilmv   = NumericVector(n, NA_REAL);
+    if (out[4]) uz       = NumericVector(n, NA_REAL);
+    if (out[5]) Rdirdown = NumericVector(n, NA_REAL);
+    if (out[6]) Rdifdown = NumericVector(n, NA_REAL);
+    if (out[7]) Rlwdown  = NumericVector(n, NA_REAL);
+    if (out[8]) Rswup    = NumericVector(n, NA_REAL);
+    if (out[9]) Rlwup    = NumericVector(n, NA_REAL);
     Micro3Worker worker(
         hgt, pai, x, gsmax, lref, ltra, clump, leafd, paia, leafden,
         Smin, Smax, gref, soilb, Psie, Vq, Vm, Mc, rho, slope, aspect, svfa, tadd,
@@ -961,10 +994,21 @@ List runmicro4Par(DataFrame dfsel, DataFrame obstime, List climdata, List pointm
     for (int k = 0; k < tsteps; ++k) { yv[k]=year[k]; mv[k]=month[k]; dv[k]=day[k]; hv[k]=hour[k]; }
     std::vector<int> lyr_v(nlyrs), st_v(nlyrs);
     for (int i = 0; i < nlyrs; ++i) { lyr_v[i] = lyr[i]; st_v[i] = st[i]; }
-    NumericVector Tz(n, NA_REAL), tleaf(n, NA_REAL), relhum(n, NA_REAL);
-    NumericVector soilmv(n, NA_REAL), uz(n, NA_REAL);
-    NumericVector Rdirdown(n, NA_REAL), Rdifdown(n, NA_REAL), Rlwdown(n, NA_REAL);
-    NumericVector Rswup(n, NA_REAL), Rlwup(n, NA_REAL);
+    // Only allocate the output arrays actually requested in `out`. All worker
+    // writes are guarded by out_r[k], so unrequested outputs (left empty) are
+    // never indexed. Mirrors serial runmicro1-4Cpp; cuts peak output memory by
+    // up to 10x when few layers are requested.
+    NumericVector Tz, tleaf, relhum, soilmv, uz, Rdirdown, Rdifdown, Rlwdown, Rswup, Rlwup;
+    if (out[0]) Tz       = NumericVector(n, NA_REAL);
+    if (out[1]) tleaf    = NumericVector(n, NA_REAL);
+    if (out[2]) relhum   = NumericVector(n, NA_REAL);
+    if (out[3]) soilmv   = NumericVector(n, NA_REAL);
+    if (out[4]) uz       = NumericVector(n, NA_REAL);
+    if (out[5]) Rdirdown = NumericVector(n, NA_REAL);
+    if (out[6]) Rdifdown = NumericVector(n, NA_REAL);
+    if (out[7]) Rlwdown  = NumericVector(n, NA_REAL);
+    if (out[8]) Rswup    = NumericVector(n, NA_REAL);
+    if (out[9]) Rlwup    = NumericVector(n, NA_REAL);
     Micro4Worker worker(
         hgt, pai, x, gsmax, lref, ltra, clump, leafd, paia, leafden,
         Smin, Smax, gref, soilb, Psie, Vq, Vm, Mc, rho, slope, aspect, svfa, tadd, lats, lons,
@@ -1616,20 +1660,21 @@ List gridmicrosnow1Par(double reqhgt, bool Dynreqhgt, DataFrame obstime,
     int hiy = (year[0] % 4 == 0 && (year[0] % 100 != 0 || year[0] % 400 == 0)) ? 366 * 24 : 365 * 24;
     int n3 = rows * cols * tsteps;
     IntegerVector dim3 = {rows, cols, tsteps};
-    NumericVector Tz_o(n3, NA_REAL), tleaf_o(n3, NA_REAL), relhum_o(n3, NA_REAL);
-    NumericVector soilm_o(n3, NA_REAL), uz_o(n3, NA_REAL);
-    NumericVector Rdir_o(n3, NA_REAL), Rdif_o(n3, NA_REAL), Rlw_o(n3, NA_REAL);
-    NumericVector Rswup_o(n3, NA_REAL), Rlwup_o(n3, NA_REAL);
-    if (out[0]) { NumericVector t = micro["Tz"];        std::copy(t.begin(), t.end(), Tz_o.begin()); }
-    if (out[1]) { NumericVector t = micro["tleaf"];     std::copy(t.begin(), t.end(), tleaf_o.begin()); }
-    if (out[2]) { NumericVector t = micro["relhum"];    std::copy(t.begin(), t.end(), relhum_o.begin()); }
-    if (out[3]) { NumericVector t = micro["soilm"];     std::copy(t.begin(), t.end(), soilm_o.begin()); }
-    if (out[4]) { NumericVector t = micro["windspeed"]; std::copy(t.begin(), t.end(), uz_o.begin()); }
-    if (out[5]) { NumericVector t = micro["Rdirdown"];  std::copy(t.begin(), t.end(), Rdir_o.begin()); }
-    if (out[6]) { NumericVector t = micro["Rdifdown"];  std::copy(t.begin(), t.end(), Rdif_o.begin()); }
-    if (out[7]) { NumericVector t = micro["Rlwdown"];   std::copy(t.begin(), t.end(), Rlw_o.begin()); }
-    if (out[8]) { NumericVector t = micro["Rswup"];     std::copy(t.begin(), t.end(), Rswup_o.begin()); }
-    if (out[9]) { NumericVector t = micro["Rlwup"];     std::copy(t.begin(), t.end(), Rlwup_o.begin()); }
+    // Only allocate + seed the requested output layers from `micro`. Worker
+    // writes are guarded by out_r[k]; unrequested outputs stay empty and are
+    // never indexed. Avoids allocating 10 full arrays plus a copy of the input
+    // when (typically) only out[c(1,4)] is requested in the snow path.
+    NumericVector Tz_o, tleaf_o, relhum_o, soilm_o, uz_o, Rdir_o, Rdif_o, Rlw_o, Rswup_o, Rlwup_o;
+    if (out[0]) { Tz_o     = NumericVector(n3, NA_REAL); NumericVector t = micro["Tz"];        std::copy(t.begin(), t.end(), Tz_o.begin()); }
+    if (out[1]) { tleaf_o  = NumericVector(n3, NA_REAL); NumericVector t = micro["tleaf"];     std::copy(t.begin(), t.end(), tleaf_o.begin()); }
+    if (out[2]) { relhum_o = NumericVector(n3, NA_REAL); NumericVector t = micro["relhum"];    std::copy(t.begin(), t.end(), relhum_o.begin()); }
+    if (out[3]) { soilm_o  = NumericVector(n3, NA_REAL); NumericVector t = micro["soilm"];     std::copy(t.begin(), t.end(), soilm_o.begin()); }
+    if (out[4]) { uz_o     = NumericVector(n3, NA_REAL); NumericVector t = micro["windspeed"]; std::copy(t.begin(), t.end(), uz_o.begin()); }
+    if (out[5]) { Rdir_o   = NumericVector(n3, NA_REAL); NumericVector t = micro["Rdirdown"];  std::copy(t.begin(), t.end(), Rdir_o.begin()); }
+    if (out[6]) { Rdif_o   = NumericVector(n3, NA_REAL); NumericVector t = micro["Rdifdown"];  std::copy(t.begin(), t.end(), Rdif_o.begin()); }
+    if (out[7]) { Rlw_o    = NumericVector(n3, NA_REAL); NumericVector t = micro["Rlwdown"];   std::copy(t.begin(), t.end(), Rlw_o.begin()); }
+    if (out[8]) { Rswup_o  = NumericVector(n3, NA_REAL); NumericVector t = micro["Rswup"];     std::copy(t.begin(), t.end(), Rswup_o.begin()); }
+    if (out[9]) { Rlwup_o  = NumericVector(n3, NA_REAL); NumericVector t = micro["Rlwup"];     std::copy(t.begin(), t.end(), Rlwup_o.begin()); }
     GridMicroSnow1Worker worker(
         pai, paia, hgt, ltra, clump, leafd, leafden,
         slope, aspect, skyview, Smax, wsa, hor,
@@ -1824,20 +1869,21 @@ List gridmicrosnow2Par(double reqhgt, bool Dynreqhgt, DataFrame obstime,
     for (int k = 0; k < tsteps; ++k) { yv[k]=year[k]; mv[k]=month[k]; dv[k]=day[k]; hv[k]=hour[k]; }
     int n3 = rows * cols * tsteps;
     IntegerVector dim3 = {rows, cols, tsteps};
-    NumericVector Tz_o(n3, NA_REAL), tleaf_o(n3, NA_REAL), relhum_o(n3, NA_REAL);
-    NumericVector soilm_o(n3, NA_REAL), uz_o(n3, NA_REAL);
-    NumericVector Rdir_o(n3, NA_REAL), Rdif_o(n3, NA_REAL), Rlw_o(n3, NA_REAL);
-    NumericVector Rswup_o(n3, NA_REAL), Rlwup_o(n3, NA_REAL);
-    if (out[0]) { NumericVector t = micro["Tz"];        std::copy(t.begin(), t.end(), Tz_o.begin()); }
-    if (out[1]) { NumericVector t = micro["tleaf"];     std::copy(t.begin(), t.end(), tleaf_o.begin()); }
-    if (out[2]) { NumericVector t = micro["relhum"];    std::copy(t.begin(), t.end(), relhum_o.begin()); }
-    if (out[3]) { NumericVector t = micro["soilm"];     std::copy(t.begin(), t.end(), soilm_o.begin()); }
-    if (out[4]) { NumericVector t = micro["windspeed"]; std::copy(t.begin(), t.end(), uz_o.begin()); }
-    if (out[5]) { NumericVector t = micro["Rdirdown"];  std::copy(t.begin(), t.end(), Rdir_o.begin()); }
-    if (out[6]) { NumericVector t = micro["Rdifdown"];  std::copy(t.begin(), t.end(), Rdif_o.begin()); }
-    if (out[7]) { NumericVector t = micro["Rlwdown"];   std::copy(t.begin(), t.end(), Rlw_o.begin()); }
-    if (out[8]) { NumericVector t = micro["Rswup"];     std::copy(t.begin(), t.end(), Rswup_o.begin()); }
-    if (out[9]) { NumericVector t = micro["Rlwup"];     std::copy(t.begin(), t.end(), Rlwup_o.begin()); }
+    // Only allocate + seed the requested output layers from `micro`. Worker
+    // writes are guarded by out_r[k]; unrequested outputs stay empty and are
+    // never indexed. Avoids allocating 10 full arrays plus a copy of the input
+    // when (typically) only out[c(1,4)] is requested in the snow path.
+    NumericVector Tz_o, tleaf_o, relhum_o, soilm_o, uz_o, Rdir_o, Rdif_o, Rlw_o, Rswup_o, Rlwup_o;
+    if (out[0]) { Tz_o     = NumericVector(n3, NA_REAL); NumericVector t = micro["Tz"];        std::copy(t.begin(), t.end(), Tz_o.begin()); }
+    if (out[1]) { tleaf_o  = NumericVector(n3, NA_REAL); NumericVector t = micro["tleaf"];     std::copy(t.begin(), t.end(), tleaf_o.begin()); }
+    if (out[2]) { relhum_o = NumericVector(n3, NA_REAL); NumericVector t = micro["relhum"];    std::copy(t.begin(), t.end(), relhum_o.begin()); }
+    if (out[3]) { soilm_o  = NumericVector(n3, NA_REAL); NumericVector t = micro["soilm"];     std::copy(t.begin(), t.end(), soilm_o.begin()); }
+    if (out[4]) { uz_o     = NumericVector(n3, NA_REAL); NumericVector t = micro["windspeed"]; std::copy(t.begin(), t.end(), uz_o.begin()); }
+    if (out[5]) { Rdir_o   = NumericVector(n3, NA_REAL); NumericVector t = micro["Rdirdown"];  std::copy(t.begin(), t.end(), Rdir_o.begin()); }
+    if (out[6]) { Rdif_o   = NumericVector(n3, NA_REAL); NumericVector t = micro["Rdifdown"];  std::copy(t.begin(), t.end(), Rdif_o.begin()); }
+    if (out[7]) { Rlw_o    = NumericVector(n3, NA_REAL); NumericVector t = micro["Rlwdown"];   std::copy(t.begin(), t.end(), Rlw_o.begin()); }
+    if (out[8]) { Rswup_o  = NumericVector(n3, NA_REAL); NumericVector t = micro["Rswup"];     std::copy(t.begin(), t.end(), Rswup_o.begin()); }
+    if (out[9]) { Rlwup_o  = NumericVector(n3, NA_REAL); NumericVector t = micro["Rlwup"];     std::copy(t.begin(), t.end(), Rlwup_o.begin()); }
     GridMicroSnow2Worker worker(
         pai, paia, hgt, ltra, clump, leafd, leafden,
         slope, aspect, skyview, lats, lons, Smax, wsa, hor,
