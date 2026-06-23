@@ -313,6 +313,8 @@ runpointmodela<-function(climarrayr, tme, reqhgt = 0.05, dtm, vegp, soilc, matem
                     soiltype, mxhgt)
     }, future.seed = NULL)
   }
+  invisible(gc(verbose = FALSE))
+  .cleantemprast()
   return(pointo)
 }
 #' Runs the grid microclimate model
@@ -448,6 +450,8 @@ runmicro <- function(micropoint, reqhgt, vegp, soilc, dtm, dtmc = NA, altcorrect
                           pai_a,tfact,out,slr,apr,hor,twi,wsa,svf,parallel=parallel,ncores=ncores)
   }
   mout$tme<-as.POSIXct(micropoint[[1]]$tmeorig)
+  invisible(gc(verbose = FALSE))
+  .cleantemprast()
   return(mout)
 }
 #' runmicro on big areas
@@ -592,10 +596,14 @@ runmicro_big <- function(micropoint, reqhgt, pathout = getwd(), vegp, soilc, dtm
           saveRDS(mout,fo)
         }
       } # end NA check
+      invisible(gc(verbose = FALSE))
+      .cleantemprast()
       ctr<-ctr+1
       utils::setTxtProgressBar(pb, ctr)
     } # end column
   } # end row
+  invisible(gc(verbose = FALSE))
+  .cleantemprast()
 }
 #' Generates microclimate equivalent of bioclim variables
 #'
@@ -810,6 +818,8 @@ runsnowmodel<-function(weather, micropoint, vegp, soilc, dtm, dtmc = NA, tme = N
       } # end fast / slow test
     } # end subset test
   } # end array / data.frame test
+  invisible(gc(verbose = FALSE))
+  .cleantemprast()
   return(smod)
 }
 

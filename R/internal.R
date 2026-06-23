@@ -33,6 +33,15 @@
   crs(r)<-crs(tem)
   r
 }
+#' Remove orphaned terra temporary raster files from disk
+#' @import terra
+.cleantemprast <- function() {
+  tryCatch(
+    terra::tmpFiles(current = FALSE, orphan = TRUE, old = FALSE, remove = TRUE),
+    error = function(e) invisible(NULL)
+  )
+  invisible(NULL)
+}
 #' Fill NAs in raster
 #' @import terra
 .fillr<-function(r,msk) {
@@ -2681,6 +2690,7 @@ flowacc<-function (dtm, basins = NA) {
     # Free per-chunk arrays before the next chunk's grid call. gc() silent.
     rm(smod, asd, dsnow, dsnow2, sss, asc, cdsnow)
     invisible(gc(verbose = FALSE))
+    .cleantemprast()
   }
   setTxtProgressBar(pb, n5days)
   return(list(Tc=Tc,Tg=Tg,groundsnowdepth=snowdepg,totalSWE=swe,snowden=sden,umu=pointm$umu))
@@ -2847,6 +2857,7 @@ flowacc<-function (dtm, basins = NA) {
     # Free per-chunk arrays before the next chunk's grid call. gc() silent.
     rm(smod, dsnow, dsnowg, dsnowc, dsnowg2, dsnowc2, sdc, sdg)
     invisible(gc(verbose = FALSE))
+    .cleantemprast()
   }
   swe<-sdepc*sden
   return(list(Tc=Tc,Tg=Tg,groundsnowdepth=sdepg,totalSWE=swe,snowden=sden,umu=pointm$umu))
@@ -3089,6 +3100,7 @@ flowacc<-function (dtm, basins = NA) {
     # Free per-chunk array subsets before the next chunk's grid call. gc() silent.
     rm(smod, climdata1, pointm1, asd, dsnow, dsnow2, sss, asc, cdsnow)
     invisible(gc(verbose = FALSE))
+    .cleantemprast()
   }
   setTxtProgressBar(pb, n5days*2)
   smod<-list(Tc=Tc,Tg=Tg,groundsnowdepth=snowdepg,totalSWE=swe,snowden=sden,umu=pointm$umu)
@@ -3368,6 +3380,7 @@ flowacc<-function (dtm, basins = NA) {
     # Free per-chunk array subsets before the next chunk's grid call. gc() silent.
     rm(smod, climdata1, pointm1, dsnow, dsnowg, dsnowc, dsnowg2, dsnowc2, sdc, sdg)
     invisible(gc(verbose = FALSE))
+    .cleantemprast()
   }
   # Recalculate as mm snow water equivelent
   swe<-sdepc*sden
