@@ -2680,7 +2680,7 @@ flowacc<-function (dtm, basins = NA) {
     snowdepg[,,s]<-asd+dsnow2
     sden[,,s]<-smod$sden
     other$isnowdc<-(asc+cdsnow+dsnow2)[,,length(s)]
-    other$isnowac<-(asd+dsnow2)[,,length(s)]
+    other$isnowdg<-(asd+dsnow2)[,,length(s)]
     other$isnowac<-smod$agec
     other$isnowag<-smod$ageg
     nnn<-s[length(s)]
@@ -3091,7 +3091,7 @@ flowacc<-function (dtm, basins = NA) {
     snowdepg[,,s]<-asd+dsnow2
     sden[,,s]<-smod$sden
     other$isnowdc<-(asc+cdsnow+dsnow2)[,,length(s)]
-    other$isnowac<-(asd+dsnow2)[,,length(s)]
+    other$isnowdg<-(asd+dsnow2)[,,length(s)]
     other$isnowac<-smod$agec
     other$isnowag<-smod$ageg
     nnn<-s[length(s)]

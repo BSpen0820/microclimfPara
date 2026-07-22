@@ -5526,13 +5526,14 @@ List snowdaysfun(NumericVector maxsnowdepth, NumericVector minsnowdepth)
     int days = maxsnowdepth.size() / 24;
     IntegerVector snowdays(days);
     IntegerVector nosnowdays(days);
+    const double snow_eps = 1e-9; // floating-point tolerance around zero SWE
     int index = 0;
     for (int d = 0; d < days; ++d) {
         snowdays[d] = 0;
         nosnowdays[d] = 0;
         for (int h = 0; h < 24; ++h) {
-            if (maxsnowdepth[index] > 0.0) snowdays[d] = 1; // 1 indicates snow
-            if (minsnowdepth[index] == 0.0) nosnowdays[d] = 1; // 1 indicates no snow
+            if (maxsnowdepth[index] > snow_eps) snowdays[d] = 1; // 1 indicates snow
+            if (minsnowdepth[index] <= snow_eps) nosnowdays[d] = 1; // 1 indicates no snow
             ++index;
         }
     }
