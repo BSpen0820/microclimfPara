@@ -523,6 +523,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// snowdaymov
+NumericVector snowdaymov(NumericVector stempg, NumericMatrix meanD, double reqhgt);
+RcppExport SEXP _microclimfPara_snowdaymov(SEXP stempgSEXP, SEXP meanDSEXP, SEXP reqhgtSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type stempg(stempgSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type meanD(meanDSEXP);
+    Rcpp::traits::input_parameter< double >::type reqhgt(reqhgtSEXP);
+    rcpp_result_gen = Rcpp::wrap(snowdaymov(stempg, meanD, reqhgt));
+    return rcpp_result_gen;
+END_RCPP
+}
 // belowpointsnow
 double belowpointsnow(double reqhgt, double meanD, double snowtempg, double Tzd, double Tza, double hiy);
 RcppExport SEXP _microclimfPara_belowpointsnow(SEXP reqhgtSEXP, SEXP meanDSEXP, SEXP snowtempgSEXP, SEXP TzdSEXP, SEXP TzaSEXP, SEXP hiySEXP) {
@@ -1046,6 +1059,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_microclimfPara_gridmodelsnow1", (DL_FUNC) &_microclimfPara_gridmodelsnow1, 6},
     {"_microclimfPara_gridmodelsnow2", (DL_FUNC) &_microclimfPara_gridmodelsnow2, 6},
     {"_microclimfPara_snowdayan", (DL_FUNC) &_microclimfPara_snowdayan, 1},
+    {"_microclimfPara_snowdaymov", (DL_FUNC) &_microclimfPara_snowdaymov, 3},
     {"_microclimfPara_belowpointsnow", (DL_FUNC) &_microclimfPara_belowpointsnow, 6},
     {"_microclimfPara_gridmicrosnow1", (DL_FUNC) &_microclimfPara_gridmicrosnow1, 10},
     {"_microclimfPara_gridmicrosnow2", (DL_FUNC) &_microclimfPara_gridmicrosnow2, 10},

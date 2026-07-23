@@ -117,6 +117,10 @@ snowdayan <- function(stempg) {
     .Call(`_microclimfPara_snowdayan`, stempg)
 }
 
+snowdaymov <- function(stempg, meanD, reqhgt) {
+    .Call(`_microclimfPara_snowdaymov`, stempg, meanD, reqhgt)
+}
+
 belowpointsnow <- function(reqhgt, meanD, snowtempg, Tzd, Tza, hiy) {
     .Call(`_microclimfPara_belowpointsnow`, reqhgt, meanD, snowtempg, Tzd, Tza, hiy)
 }

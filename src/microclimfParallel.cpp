@@ -1598,8 +1598,13 @@ struct GridMicroSnow1Worker : public Worker {
                         if (out_r[8]) Rswup_w[idx]     = apv.Rdup;
                         if (out_r[9]) Rlwup_w[idx]     = apv.Rlwup;
                     } else {
+                        double bare_val = out_r[0] ? Tz_w[idx] : NA_REAL;  // pre-filled moutn value on mixed days; NA on pure-snowdays
                         double bpv = belowpointsnow(reqhgts, meanD_m(i,j),
                             snowtempg_v[idx], Tzd_v[idx], mat, hiy);
+                        if (!std::isnan(bare_val)) {
+                            double wgt = std::max(std::min(sdepg_v[idx] / std::abs(reqhgt), 1.0), 0.0);
+                            bpv = wgt * bpv + (1.0 - wgt) * bare_val;
+                        }
                         if (out_r[0]) Tz_w[idx]        = bpv;
                         if (out_r[1]) tleaf_w[idx]     = bpv;
                         if (out_r[2]) relhum_w[idx]    = 100.0;
@@ -1642,8 +1647,8 @@ List gridmicrosnow1Par(double reqhgt, bool Dynreqhgt, DataFrame obstime,
     NumericVector swe       = snowm["totalSWE"];
     NumericVector sdepg     = snowm["groundsnowdepth"];
     NumericVector sden      = snowm["snowden"];
-    NumericVector Tzd  = snowdayan(snowm["Tg"]);
     NumericMatrix meanD = meanDsnow(snowm["snowden"]);
+    NumericVector Tzd  = snowdaymov(snowm["Tg"], meanD, reqhgt);
     int rows = pai.nrow(); int cols = pai.ncol(); int tsteps = tc.size();
     double mxtc = -273.15;
     std::vector<double> zend_v(tsteps), zenr_v(tsteps), azid_v(tsteps), azir_v(tsteps);
@@ -1814,8 +1819,13 @@ struct GridMicroSnow2Worker : public Worker {
                         if (out_r[8]) Rswup_w[idx]     = apv.Rdup;
                         if (out_r[9]) Rlwup_w[idx]     = apv.Rlwup;
                     } else {
+                        double bare_val = out_r[0] ? Tz_w[idx] : NA_REAL;  // pre-filled moutn value on mixed days; NA on pure-snowdays
                         double bpv = belowpointsnow(reqhgts, meanD_m(i,j),
                             snowtempg_v[idx], Tzd_v[idx], mat, hiy);
+                        if (!std::isnan(bare_val)) {
+                            double wgt = std::max(std::min(sdepg_v[idx] / std::abs(reqhgt), 1.0), 0.0);
+                            bpv = wgt * bpv + (1.0 - wgt) * bare_val;
+                        }
                         if (out_r[0]) Tz_w[idx]        = bpv;
                         if (out_r[1]) tleaf_w[idx]     = bpv;
                         if (out_r[2]) relhum_w[idx]    = 100.0;
@@ -1858,8 +1868,8 @@ List gridmicrosnow2Par(double reqhgt, bool Dynreqhgt, DataFrame obstime,
     NumericVector swe       = snowm["totalSWE"];
     NumericVector sdepg     = snowm["groundsnowdepth"];
     NumericVector sden      = snowm["snowden"];
-    NumericVector Tzd  = snowdayan(snowm["Tg"]);
     NumericMatrix meanD = meanDsnow(snowm["snowden"]);
+    NumericVector Tzd  = snowdaymov(snowm["Tg"], meanD, reqhgt);
     int rows = pai.nrow(); int cols = pai.ncol(); int tsteps = hour.size();
     int hiy = (year[0] % 4 == 0 && (year[0] % 100 != 0 || year[0] % 400 == 0)) ? 366 * 24 : 365 * 24;
     std::vector<int> windex_v(tsteps);
