@@ -117,20 +117,20 @@ snowdayan <- function(stempg) {
     .Call(`_microclimfPara_snowdayan`, stempg)
 }
 
-snowdaymov <- function(stempg, meanD, reqhgt) {
-    .Call(`_microclimfPara_snowdaymov`, stempg, meanD, reqhgt)
+snowdaymov <- function(Tgref, snowdays, meanD, reqhgt) {
+    .Call(`_microclimfPara_snowdaymov`, Tgref, snowdays, meanD, reqhgt)
 }
 
 belowpointsnow <- function(reqhgt, meanD, snowtempg, Tzd, Tza, hiy) {
     .Call(`_microclimfPara_belowpointsnow`, reqhgt, meanD, snowtempg, Tzd, Tza, hiy)
 }
 
-gridmicrosnow1 <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out) {
-    .Call(`_microclimfPara_gridmicrosnow1`, reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out)
+gridmicrosnow1 <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, Tgref, snowdays, micro, vegp, other, mat, out) {
+    .Call(`_microclimfPara_gridmicrosnow1`, reqhgt, Dynreqhgt, obstime, climdata, snowm, Tgref, snowdays, micro, vegp, other, mat, out)
 }
 
-gridmicrosnow2 <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out) {
-    .Call(`_microclimfPara_gridmicrosnow2`, reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out)
+gridmicrosnow2 <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, Tgref, snowdays, micro, vegp, other, mat, out) {
+    .Call(`_microclimfPara_gridmicrosnow2`, reqhgt, Dynreqhgt, obstime, climdata, snowm, Tgref, snowdays, micro, vegp, other, mat, out)
 }
 
 clearskyradCpp <- function(year, month, day, lt, lat, lon, tc, rh, pk) {
@@ -225,11 +225,11 @@ gridmodelsnow2Par <- function(obstime, climdata, pointm, vegp, other, snowenv, n
     .Call(`_microclimfPara_gridmodelsnow2Par`, obstime, climdata, pointm, vegp, other, snowenv, ncores)
 }
 
-gridmicrosnow1Par <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out, ncores = 2L) {
-    .Call(`_microclimfPara_gridmicrosnow1Par`, reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out, ncores)
+gridmicrosnow1Par <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, Tgref, snowdays, micro, vegp, other, mat, out, ncores = 2L) {
+    .Call(`_microclimfPara_gridmicrosnow1Par`, reqhgt, Dynreqhgt, obstime, climdata, snowm, Tgref, snowdays, micro, vegp, other, mat, out, ncores)
 }
 
-gridmicrosnow2Par <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out, ncores = 2L) {
-    .Call(`_microclimfPara_gridmicrosnow2Par`, reqhgt, Dynreqhgt, obstime, climdata, snowm, micro, vegp, other, mat, out, ncores)
+gridmicrosnow2Par <- function(reqhgt, Dynreqhgt, obstime, climdata, snowm, Tgref, snowdays, micro, vegp, other, mat, out, ncores = 2L) {
+    .Call(`_microclimfPara_gridmicrosnow2Par`, reqhgt, Dynreqhgt, obstime, climdata, snowm, Tgref, snowdays, micro, vegp, other, mat, out, ncores)
 }
 

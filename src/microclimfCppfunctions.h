@@ -149,7 +149,7 @@ NumericMatrix bioclimfill(int rows, int cols);
 // Snow microclimate helpers (used by gridmicrosnow workers)
 NumericVector snowdayan(NumericVector stempg);
 NumericMatrix meanDsnow(NumericVector snowden);
-NumericVector snowdaymov(NumericVector stempg, NumericMatrix meanD, double reqhgt);
+NumericVector snowdaymov(NumericVector Tgref, NumericVector snowdays, NumericMatrix meanD, double reqhgt);
 double belowpointsnow(double reqhgt, double meanD, double snowtempg, double Tzd, double Tza, double hiy);
 snowmicro snowabovepoint(double reqhgt, double zref, double tc, double relhum, double pk, double u2,
                          double Rsw, double Rdif, double Rlw,

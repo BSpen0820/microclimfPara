@@ -1624,7 +1624,7 @@ struct GridMicroSnow1Worker : public Worker {
 
 // [[Rcpp::export]]
 List gridmicrosnow1Par(double reqhgt, bool Dynreqhgt, DataFrame obstime,
-    DataFrame climdata, List snowm, List micro, List vegp, List other,
+    DataFrame climdata, List snowm, NumericVector Tgref, NumericVector snowdays, List micro, List vegp, List other,
     double mat, std::vector<bool> out, int ncores = 2)
 {
     IntegerVector year = obstime["year"]; IntegerVector month = obstime["month"];
@@ -1648,7 +1648,7 @@ List gridmicrosnow1Par(double reqhgt, bool Dynreqhgt, DataFrame obstime,
     NumericVector sdepg     = snowm["groundsnowdepth"];
     NumericVector sden      = snowm["snowden"];
     NumericMatrix meanD = meanDsnow(snowm["snowden"]);
-    NumericVector Tzd  = snowdaymov(snowm["Tg"], meanD, reqhgt);
+    NumericVector Tzd  = snowdaymov(Tgref, snowdays, meanD, reqhgt);
     int rows = pai.nrow(); int cols = pai.ncol(); int tsteps = tc.size();
     double mxtc = -273.15;
     std::vector<double> zend_v(tsteps), zenr_v(tsteps), azid_v(tsteps), azir_v(tsteps);
@@ -1845,7 +1845,7 @@ struct GridMicroSnow2Worker : public Worker {
 
 // [[Rcpp::export]]
 List gridmicrosnow2Par(double reqhgt, bool Dynreqhgt, DataFrame obstime,
-    List climdata, List snowm, List micro, List vegp, List other,
+    List climdata, List snowm, NumericVector Tgref, NumericVector snowdays, List micro, List vegp, List other,
     double mat, std::vector<bool> out, int ncores = 2)
 {
     IntegerVector year = obstime["year"]; IntegerVector month = obstime["month"];
@@ -1869,7 +1869,7 @@ List gridmicrosnow2Par(double reqhgt, bool Dynreqhgt, DataFrame obstime,
     NumericVector sdepg     = snowm["groundsnowdepth"];
     NumericVector sden      = snowm["snowden"];
     NumericMatrix meanD = meanDsnow(snowm["snowden"]);
-    NumericVector Tzd  = snowdaymov(snowm["Tg"], meanD, reqhgt);
+    NumericVector Tzd  = snowdaymov(Tgref, snowdays, meanD, reqhgt);
     int rows = pai.nrow(); int cols = pai.ncol(); int tsteps = hour.size();
     int hiy = (year[0] % 4 == 0 && (year[0] % 100 != 0 || year[0] % 400 == 0)) ? 366 * 24 : 365 * 24;
     std::vector<int> windex_v(tsteps);

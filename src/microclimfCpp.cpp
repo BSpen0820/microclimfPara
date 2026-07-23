@@ -4718,81 +4718,59 @@ NumericMatrix meanDsnow(NumericVector snowden)
     } // end i
     return meanD;
 }
-// Calculate hourly snow-surface temperature at damping depth using linear
-// interpolation between per-calendar-day means (each day's mean computed
-// with NA hours skipped) instead of a per-day block mean or a moving
-// average. A moving average was tried first but breaks on the real
-// snow-days-subsetted array gridmicrosnow*Par actually receives: manCpp's
-// circular window (for windows > 48h) wraps season-end into season-start,
-// and smears any single NA hour across the whole window. Day-mean
-// interpolation is immune to both - it never crosses more than one
-// array-adjacent day-block boundary at a time, and NA hours are simply
-// excluded from that day's mean rather than propagated.
+// Calculate hourly snow-surface temperature at damping depth using a
+// depth-dependent trailing rolling window (manCpp), matching the no-snow
+// model's own Tbelowgroundv() "complete" case (n = round(nb), same formula,
+// same manCpp call - see Tbelowgroundv() above). This requires the input
+// series to be a genuinely NA-free, calendar-complete array covering the
+// full period the run spans: Tgref is assembled and gap-filled in R by
+// .build_snow_Tgref() (R/internal.R) before this function is ever called,
+// specifically so this smoother needs no gap-detection logic of its own.
+// Two earlier designs were tried and rejected: a moving average applied
+// directly to the snow-days-subsetted array (broke on real data - manCpp's
+// circular window wrapped season-end into season-start and smeared isolated
+// NA hours across the whole window), and linear interpolation between
+// per-day means (safe, but its window is narrow by construction - only the
+// immediately adjacent day on each side, regardless of query depth).
 // [[Rcpp::export]]
-NumericVector snowdaymov(NumericVector stempg, NumericMatrix meanD, double reqhgt)
+NumericVector snowdaymov(NumericVector Tgref, NumericVector snowdays, NumericMatrix meanD, double reqhgt)
 {
-    IntegerVector dims = stempg.attr("dim");
+    IntegerVector dims = Tgref.attr("dim");
     int rows = dims[0];
     int cols = dims[1];
     int tsteps = dims[2];
-    if (tsteps % 24 != 0) Rcpp::stop("snowdaymov(): stempg's third dimension must be a multiple of 24 (hourly data in exact day blocks)");
-    int ndays = tsteps / 24;
-    NumericVector snowtempd(stempg.size(), NA_REAL);
-    snowtempd.attr("dim") = dims;
+    int nsnowdays = snowdays.size();
+    int outsteps = nsnowdays * 24;
+    NumericVector snowtempd(static_cast<R_xlen_t>(rows) * cols * outsteps, NA_REAL);
+    snowtempd.attr("dim") = IntegerVector::create(rows, cols, outsteps);
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
-            double val = stempg[i + rows * j];
+            double val = Tgref[i + rows * j];
             double md = meanD(i, j);
             if (!NumericVector::is_na(val) && !NumericMatrix::is_na(md) && md > 0.0) {
-                // Per-array-day-block mean, skipping NA hours (na.rm semantics).
-                std::vector<double> daymean(ndays, NA_REAL);
-                for (int d = 0; d < ndays; ++d) {
-                    double sum = 0.0;
-                    int count = 0;
-                    for (int h = 0; h < 24; ++h) {
-                        int k = d * 24 + h;
-                        int idx = i + rows * j + cols * rows * k;
-                        double v = stempg[idx];
-                        if (!NumericVector::is_na(v)) { sum += v; ++count; }
-                    }
-                    if (count > 0) daymean[d] = sum / static_cast<double>(count);
-                }
-                // Fill any fully-NA day from the nearest day with a valid mean
-                // (forward-fill then back-fill), so interpolation never sees NA.
-                double last_valid = NA_REAL;
-                for (int d = 0; d < ndays; ++d) {
-                    if (!NumericVector::is_na(daymean[d])) last_valid = daymean[d];
-                    else if (!NumericVector::is_na(last_valid)) daymean[d] = last_valid;
-                }
-                double next_valid = NA_REAL;
-                for (int d = ndays - 1; d >= 0; --d) {
-                    if (!NumericVector::is_na(daymean[d])) next_valid = daymean[d];
-                    else if (!NumericVector::is_na(next_valid)) daymean[d] = next_valid;
-                }
-                // Anchor each day's mean at its midpoint hour (12) and linearly
-                // interpolate between adjacent day-block anchors; clamp to the
-                // nearest day's mean outside the first/last anchor (no wraparound).
+                double nb = -118.35 * reqhgt / md;
+                int n = static_cast<int>(std::round(nb));
+                std::vector<double> series(tsteps);
                 for (int k = 0; k < tsteps; ++k) {
-                    int d = k / 24;
-                    int h = k % 24;
-                    double Tz;
-                    if (h < 12) {
-                        if (d == 0) {
-                            Tz = daymean[0];
-                        } else {
-                            double frac = (h + 12.0) / 24.0;
-                            Tz = daymean[d - 1] + (daymean[d] - daymean[d - 1]) * frac;
-                        }
-                    } else {
-                        if (d == ndays - 1) {
-                            Tz = daymean[d];
-                        } else {
-                            double frac = (h - 12.0) / 24.0;
-                            Tz = daymean[d] + (daymean[d + 1] - daymean[d]) * frac;
-                        }
-                    }
                     int idx = i + rows * j + cols * rows * k;
-                    snowtempd[idx] = Tz;
+                    series[k] = Tgref[idx];
+                }
+                std::vector<double> smoothed;
+                if (n < tsteps) {
+                    smoothed = manCpp(series, n);
+                } else {
+                    double sumT = 0.0;
+                    for (int k = 0; k < tsteps; ++k) sumT += series[k];
+                    double meanT = sumT / static_cast<double>(tsteps);
+                    smoothed.assign(tsteps, meanT);
+                }
+                for (int d = 0; d < nsnowdays; ++d) {
+                    int calday = static_cast<int>(snowdays[d]) - 1;
+                    for (int h = 0; h < 24; ++h) {
+                        int srcidx = calday * 24 + h;
+                        int outidx = i + rows * j + cols * rows * (d * 24 + h);
+                        snowtempd[outidx] = smoothed[srcidx];
+                    }
                 }
             } // end NA/meanD check
         } // end j
@@ -4955,7 +4933,7 @@ double belowpointsnow(double reqhgt, double meanD, double snowtempg, double Tzd,
 }
 // snow microclimate model - data.frame climate
 // [[Rcpp::export]]
-List gridmicrosnow1(double reqhgt, bool Dynreqhgt, DataFrame obstime, DataFrame climdata, List snowm, List micro, List vegp, List other,
+List gridmicrosnow1(double reqhgt, bool Dynreqhgt, DataFrame obstime, DataFrame climdata, List snowm, NumericVector Tgref, NumericVector snowdays, List micro, List vegp, List other,
     double mat, std::vector<bool> out) {
     // Extract obstime
     IntegerVector year = obstime["year"];
@@ -5003,7 +4981,7 @@ List gridmicrosnow1(double reqhgt, bool Dynreqhgt, DataFrame obstime, DataFrame 
     NumericVector sden = snowm["snowden"];
     // Calculate additional snow variables
     NumericMatrix meanD = meanDsnow(snowm["snowden"]);
-    NumericVector Tzd = snowdaymov(snowm["Tg"], meanD, reqhgt);
+    NumericVector Tzd = snowdaymov(Tgref, snowdays, meanD, reqhgt);
     // Initialise
     NumericVector Tz;
     NumericVector tleaf;
@@ -5130,7 +5108,7 @@ List gridmicrosnow1(double reqhgt, bool Dynreqhgt, DataFrame obstime, DataFrame 
 }
 // snow microclimate model -array climate
 // [[Rcpp::export]]
-List gridmicrosnow2(double reqhgt, bool Dynreqhgt, DataFrame obstime, List climdata, List snowm, List micro, List vegp, List other,
+List gridmicrosnow2(double reqhgt, bool Dynreqhgt, DataFrame obstime, List climdata, List snowm, NumericVector Tgref, NumericVector snowdays, List micro, List vegp, List other,
     double mat, std::vector<bool> out) {
     // Extract obstime
     IntegerVector year = obstime["year"];
@@ -5174,7 +5152,7 @@ List gridmicrosnow2(double reqhgt, bool Dynreqhgt, DataFrame obstime, List climd
     NumericVector sden = snowm["snowden"];
     // Calculate snow variables
     NumericMatrix meanD = meanDsnow(snowm["snowden"]);
-    NumericVector Tzd = snowdaymov(snowm["Tg"], meanD, reqhgt);
+    NumericVector Tzd = snowdaymov(Tgref, snowdays, meanD, reqhgt);
     // Extract existing microclimate model variables
     NumericVector Tz;
     NumericVector tleaf;
