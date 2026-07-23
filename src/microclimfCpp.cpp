@@ -4739,6 +4739,7 @@ NumericVector snowdaymov(NumericVector Tgref, NumericVector snowdays, NumericMat
     int rows = dims[0];
     int cols = dims[1];
     int tsteps = dims[2];
+    if (tsteps % 24 != 0) Rcpp::stop("snowdaymov(): Tgref's third dimension must be a multiple of 24 (hourly data in exact day blocks)");
     int nsnowdays = snowdays.size();
     int outsteps = nsnowdays * 24;
     NumericVector snowtempd(static_cast<R_xlen_t>(rows) * cols * outsteps, NA_REAL);
