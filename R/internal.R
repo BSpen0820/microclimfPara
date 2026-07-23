@@ -3777,6 +3777,7 @@ flowacc<-function (dtm, basins = NA) {
     snowin<-.prepsnowinputs1(reqhgt,dtm,vegp,soilc,micropoints,snowdays,nosnowdays,
                            smod,moutn,tmeorig,subs,runchecks,slr,apr,hor,svf,wsa,pai_a)
     ss<-rep((snowdays-1)*24,each=24)+rep(c(1:24),length(snowdays))
+    Tgref <- .build_snow_Tgref(smod$Tg, moutn$Tz, snowdays, nosnowdays)
     smods<-subsetsnowmodel(smod, ss)
     if (reqhgt == 0) {
       out <- rep(FALSE, 10)
@@ -3786,12 +3787,12 @@ flowacc<-function (dtm, basins = NA) {
       out[c(1, 4)] <- TRUE
     }
     if (parallel) {
-      mouts<-gridmicrosnow1Par(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,micropoint$matemp,out,ncores)
+      mouts<-gridmicrosnow1Par(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,Tgref,snowdays,snowin$micro,snowin$vegp,snowin$other,micropoint$matemp,out,ncores)
     } else {
-      mouts<-gridmicrosnow1(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,micropoint$matemp,out)
+      mouts<-gridmicrosnow1(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,Tgref,snowdays,snowin$micro,snowin$vegp,snowin$other,micropoint$matemp,out)
     }
     # snow inputs consumed; free before merging the full output. gc() silent.
-    rm(snowin, smods)
+    rm(snowin, smods, Tgref)
     invisible(gc(verbose = FALSE))
   }
   utils::setTxtProgressBar(pb,4)
@@ -3876,6 +3877,7 @@ flowacc<-function (dtm, basins = NA) {
                              nosnowdays,moutn,slr,apr,hor,svf,wsa,pai_a)
     utils::setTxtProgressBar(pb,4)
     ss<-rep((snowdays-1)*24,each=24)+rep(c(1:24),length(snowdays))
+    Tgref <- .build_snow_Tgref(smod$Tg, moutn$Tz, snowdays, nosnowdays)
     smods<-subsetsnowmodel(smod, ss)
     if (reqhgt == 0) {
       out <- rep(FALSE, 10)
@@ -3885,12 +3887,12 @@ flowacc<-function (dtm, basins = NA) {
       out[c(1, 4)] <- TRUE
     }
     if (parallel) {
-      mouts<-gridmicrosnow2Par(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,matemp,out,ncores)
+      mouts<-gridmicrosnow2Par(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,Tgref,snowdays,snowin$micro,snowin$vegp,snowin$other,matemp,out,ncores)
     } else {
-      mouts<-gridmicrosnow2(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,snowin$micro,snowin$vegp,snowin$other,matemp,out)
+      mouts<-gridmicrosnow2(reqhgt,Dynreqhgt,snowin$obstime,snowin$weather,smods,Tgref,snowdays,snowin$micro,snowin$vegp,snowin$other,matemp,out)
     }
     # snow inputs consumed; free before merging the full output. gc() silent.
-    rm(snowin, smods)
+    rm(snowin, smods, Tgref)
     invisible(gc(verbose = FALSE))
     utils::setTxtProgressBar(pb,5)
   }
