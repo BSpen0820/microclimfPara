@@ -3723,7 +3723,16 @@ flowacc<-function (dtm, basins = NA) {
       v <- Tgref[i, j, ]
       valid <- !is.na(v)
       if (all(valid)) next    # nothing to fill
-      if (!any(valid)) next   # fully masked pixel; leave entirely NA
+      if (sum(valid) < 2) {
+        # Too little data to interpolate meaningfully (stats::approx()
+        # requires >=2 points) - and a single stray valid hour is not enough
+        # to trust this pixel anyway. Blank it entirely (not just leave the
+        # NAs) so hour 0 is NA too: snowdaymov() (C++) uses hour 0 as its own
+        # per-pixel validity probe, so a pixel this function doesn't fully
+        # fill must present as fully masked, never as partially valid.
+        Tgref[i, j, ] <- NA_real_
+        next
+      }
       v[!valid] <- stats::approx(idx[valid], v[valid], xout = idx[!valid], rule = 2)$y
       Tgref[i, j, ] <- v
     }

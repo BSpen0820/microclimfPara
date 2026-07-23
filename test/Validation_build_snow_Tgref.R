@@ -24,10 +24,14 @@ storage.mode(Tg) <- "double"
 Tg[2, 2, ] <- NA_real_  # fully masked pixel
 
 # Days: 1-4 and 8-10 are snowdays; 5-7 are pure nosnow days (the "gap").
+# Day 4 is ALSO flagged as a nosnowday, making it a genuine mixed day -
+# snowdaysfun() can flag the same day both ways for different pixels, and
+# the assembled series must still use Tg (never moutn$Tz) whenever a day is
+# in snowdays, mixed or not.
 snowdays <- c(1, 2, 3, 4, 8, 9, 10)
-nosnowdays <- c(5, 6, 7)
+nosnowdays <- c(4, 5, 6, 7)
 
-# moutn$Tz is indexed compactly over nosnowdays only (3 days x 24h = 72
+# moutn$Tz is indexed compactly over nosnowdays only (4 days x 24h = 96
 # hours), with a distinct, easily-recognized value (1000 + day) so the
 # splice's calendar-position mapping can be checked by eye.
 moutn_Tz <- array(0, dim = c(rows, cols, length(nosnowdays) * 24))
@@ -52,18 +56,25 @@ Tgref <- microclimfPara:::.build_snow_Tgref(Tg, moutn_Tz, snowdays, nosnowdays)
 stopifnot(identical(dim(Tgref), dim(Tg)))
 cat("PASS: Tgref keeps the full-year shape (not subsetted to snowdays).\n")
 
-# --- (2) Pure-nosnow days (5,6,7) are replaced by moutn$Tz's value at the
-# right calendar position, for a pixel with no other gaps (pixel 1,1).
-for (d in nosnowdays) {
+# --- (2) Pure-nosnow days (5,6,7 - i.e. nosnowdays minus snowdays) are
+# replaced by moutn$Tz's value at the right calendar position, for a pixel
+# with no other gaps (pixel 1,1). Day 4 is deliberately excluded here even
+# though it's in nosnowdays too - it's a mixed day (also in snowdays), and
+# must NOT be spliced; that's checked separately in (3).
+pure_nosnow <- setdiff(nosnowdays, snowdays)
+stopifnot(identical(pure_nosnow, c(5, 6, 7)))
+for (d in pure_nosnow) {
   hrs <- ((d - 1) * 24 + 1):(d * 24)
   stopifnot(all(Tgref[1, 1, hrs] == 1000 + d))
 }
 cat("PASS: pure-nosnow days are spliced from moutn$Tz at the correct calendar position.\n")
 
-# --- (3) Snowdays hours (for a gap-free pixel) keep the original Tg value.
+# --- (3) Snowdays hours (for a gap-free pixel) keep the original Tg value -
+# including day 4, which is a genuine mixed day (flagged both snowday and
+# nosnowday). A mixed day must use Tg, never moutn$Tz's value (1004).
 snow_hrs_all <- as.vector(sapply(snowdays, function(d) ((d - 1) * 24 + 1):(d * 24)))
 stopifnot(all(Tgref[1, 1, snow_hrs_all] == Tg[1, 1, snow_hrs_all]))
-cat("PASS: snowdays/mixed-day hours keep Tg's own value (not overwritten by moutn$Tz).\n")
+cat("PASS: snowdays/mixed-day hours keep Tg's own value (not overwritten by moutn$Tz, including the genuine mixed day 4).\n")
 
 # --- (4) No NA remains anywhere for the non-masked pixels.
 stopifnot(!anyNA(Tgref[1, 1, ]))
@@ -102,5 +113,17 @@ Tgref_nogap <- microclimfPara:::.build_snow_Tgref(Tg, array(0, dim = c(rows, col
 stopifnot(!anyNA(Tgref_nogap[1, 2, ]))    # isolated gap still filled
 stopifnot(all(is.na(Tgref_nogap[2, 2, ])))  # masked pixel still all-NA
 cat("PASS: empty-nosnowdays edge case (pure snow season, no gaps to splice) still runs the NA-fill pass correctly.\n")
+
+# --- (9) A pixel with fewer than 2 valid hours in the whole series cannot be
+# interpolated (stats::approx() requires >=2 points) and is too sparse to
+# trust anyway - it must be blanked entirely (including hour 0), not left
+# with a single stray valid value that would fool snowdaymov()'s hour-0
+# validity probe into treating a broken pixel as valid, and must not crash.
+Tg_sparse <- array(NA_real_, dim = c(1, 1, tsteps))
+Tg_sparse[1, 1, 1] <- 5  # exactly one valid hour, at hour 0 itself
+moutn_Tz_sparse <- array(NA_real_, dim = c(1, 1, length(nosnowdays) * 24))
+Tgref_sparse <- microclimfPara:::.build_snow_Tgref(Tg_sparse, moutn_Tz_sparse, snowdays, nosnowdays)
+stopifnot(all(is.na(Tgref_sparse[1, 1, ])))
+cat("PASS: a pixel with fewer than 2 valid hours all year is blanked entirely (hour 0 included), not left partially valid or crashed.\n")
 
 cat("\nPASS: all .build_snow_Tgref() correctness checks succeeded.\n")
