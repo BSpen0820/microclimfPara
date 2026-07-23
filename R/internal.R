@@ -3681,6 +3681,55 @@ flowacc<-function (dtm, basins = NA) {
   names(micros)<-nms
   return(list(obstime=obstime,weather=climdata,micro=micros,vegp=vegp,other=other))
 }
+#' Build a full-year, NA-free reference series for snowdaymov()'s smoothing window
+#'
+#' Splices smod$Tg (snow-surface skin temperature) with moutn$Tz (the no-snow
+#' model's own below-ground prediction) so every calendar day in the run has a
+#' physically-grounded value, then linearly interpolates any remaining NA hour
+#' from its nearest valid neighbours. This lets snowdaymov() (see
+#' src/microclimfCpp.cpp) call manCpp() directly with no gap-detection logic
+#' of its own - the gap problem is resolved before the array reaches it.
+#'
+#' A single interpolation pass covers both known NA sources: Tg's own sparse
+#' real gaps on snowdays hours (confirmed present in production data - 1-2
+#' isolated hours per affected pixel, not whole missing days), and a
+#' hypothetical whole/partial-NA day spliced in from moutn_Tz. On a whole-NA
+#' day this fills by linear ramp across the gap rather than a flat
+#' forward-fill from the previous day - simpler (one code path) and at least
+#' as physically reasonable, since both keep the downstream manCpp() call
+#' NA-free either way.
+#'
+#' A pixel is treated as fully masked (left entirely NA) only when it has
+#' zero valid hours anywhere in the full year - never based on whether hour 0
+#' specifically is NA. This matters: snowdaymov() (C++) uses hour 0 as its own
+#' per-pixel validity probe, so every valid pixel this function returns must
+#' have a non-NA hour 0 by construction, even if the raw input happened to
+#' have an NA there.
+.build_snow_Tgref <- function(Tg, moutn_Tz, snowdays, nosnowdays) {
+  Tgref <- Tg
+  tdays <- sort(unique(c(snowdays, nosnowdays)))
+  nosnow <- setdiff(tdays, snowdays)
+  if (length(nosnow) > 0) {
+    nosnowh <- rep((nosnow - 1) * 24, each = 24) + rep(1:24, length(nosnow))
+    s <- 1:(length(nosnowdays) * 24)
+    s1 <- s[rep(nosnowdays %in% nosnow, each = 24)]
+    Tgref[,,nosnowh] <- moutn_Tz[,,s1]
+  }
+  dims <- dim(Tgref)
+  rows <- dims[1]; cols <- dims[2]; tsteps <- dims[3]
+  idx <- seq_len(tsteps)
+  for (i in seq_len(rows)) {
+    for (j in seq_len(cols)) {
+      v <- Tgref[i, j, ]
+      valid <- !is.na(v)
+      if (all(valid)) next    # nothing to fill
+      if (!any(valid)) next   # fully masked pixel; leave entirely NA
+      v[!valid] <- stats::approx(idx[valid], v[valid], xout = idx[!valid], rule = 2)$y
+      Tgref[i, j, ] <- v
+    }
+  }
+  Tgref
+}
 #' Run microclimate grid model with snow (data.frame weather)
 .runmicrosnow1 <- function(micropoint,reqhgt,vegp,soilc,dtm,smod,runchecks=TRUE,pai_a=NA,tfact=1.5,
                            out=rep(TRUE,10),slr=NA,apr=NA,hor=NA,twi=NA,wsa=NA,svf=NA,Dynreqhgt=FALSE,
