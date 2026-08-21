@@ -63,6 +63,7 @@ double dpsimCpp(double ze);
 double dpsihCpp(double ze);
 double dphihCpp(double ze);
 double gfreeCpp(double leafd, double H);
+double zrefeffCpp(double zref, double h);
 double gturbCpp(double uf, double d, double zm, double zref, double ph, double psi_h, double gmin);
 
 // Stomatal / conductance
@@ -106,7 +107,7 @@ radmodel2 twostreamCpp(double pai, double clump, double gref, double svfa, doubl
                        solmodel solp, kstruct kp, tsdirstruct tspdir, tirstruct tir);
 
 // Wind
-tiwstruct windtiCpp(double h, double pai);
+tiwstruct windtiCpp(double h, double pai, double zref);
 windmodel windCpp(double reqhgt, double zref, double h, double pai,
                   double uref, double umu, double ws, tiwstruct tiw);
 

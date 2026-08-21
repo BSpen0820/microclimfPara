@@ -92,7 +92,7 @@ runpointmodel<-function(weather, reqhgt = 0.05, dtm, vegp, soilc, runchecks = TR
   if (class(groundp_p) == "logical") groundp_p<-.sortsoilc(soilc,method="P")
   # Peform weather height adjustment
   if (class(mxhgt) == "logical") mxhgt<-.mfr(vegp$hgt,max)
-  zout<-ifelse(mxhgt>2,mxhgt,2)
+  zout<-max(2, 3 * mxhgt)
   if (class(vegp$x)[1] == "PackedSpatRaster") vegp$x<-rast(vegp$x)
   if (class(lat) == "logical") {
     ll<-.latlongfromraster(vegp$x)

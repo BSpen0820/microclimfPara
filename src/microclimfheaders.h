@@ -94,6 +94,7 @@ struct tiwstruct {
     double d;
     double zm;
     double a;
+    double zrefe;
 };
 struct windmodel {
     double uf;

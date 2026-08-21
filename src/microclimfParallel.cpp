@@ -70,7 +70,7 @@ struct Micro1Worker : public Worker {
             if (std::isnan(hgt_m(i, j))) continue;
             tirstruct tir = twostreamdif(pai_m(i,j), paia_m(i,j), x_m(i,j), lref_m(i,j), ltra_m(i,j), clump_m(i,j), gref_m(i,j));
             stompstruct stomp = stomparamsCpp(hgt_m(i,j), lat, x_m(i,j));
-            tiwstruct tiw = windtiCpp(hgt_m(i,j), pai_m(i,j));
+            tiwstruct tiw = windtiCpp(hgt_m(i,j), pai_m(i,j), zref);
             soilpstruct spa;
             spa.Smax = Smax_m(i,j); spa.Smin = Smin_m(i,j); spa.soilb = soilb_m(i,j); spa.psi_e = Psie_m(i,j);
             spa.Vq = Vq_m(i,j); spa.Vm = Vm_m(i,j); spa.Mc = Mc_m(i,j); spa.rho = rho_m(i,j);
@@ -320,7 +320,7 @@ struct Micro2Worker : public Worker {
             if (std::isnan(hgt_m(i, j))) continue;
             tirstruct tir = twostreamdif(pai_m(i,j), paia_m(i,j), x_m(i,j), lref_m(i,j), ltra_m(i,j), clump_m(i,j), gref_m(i,j));
             stompstruct stomp = stomparamsCpp(hgt_m(i,j), lats_m(i,j), x_m(i,j));
-            tiwstruct tiw = windtiCpp(hgt_m(i,j), pai_m(i,j));
+            tiwstruct tiw = windtiCpp(hgt_m(i,j), pai_m(i,j), zref);
             soilpstruct spa;
             spa.Smax = Smax_m(i,j); spa.Smin = Smin_m(i,j); spa.soilb = soilb_m(i,j); spa.psi_e = Psie_m(i,j);
             spa.Vq = Vq_m(i,j); spa.Vm = Vm_m(i,j); spa.Mc = Mc_m(i,j); spa.rho = rho_m(i,j);
@@ -588,7 +588,7 @@ struct Micro3Worker : public Worker {
                 int idxl = base + cols * rows * lyr;
                 tirstruct tir = twostreamdif(pai_v[idxl], paia_v[idxl], x_v[idxl], lref_v[idxl], ltra_v[idxl], clump_v[idxl], gref_m(i,j));
                 stompstruct stomp = stomparamsCpp(hgt_v[idxl], lat, x_v[idxl]);
-                tiwstruct tiw = windtiCpp(hgt_v[idxl], pai_v[idxl]);
+                tiwstruct tiw = windtiCpp(hgt_v[idxl], pai_v[idxl], zref);
                 for (int dy = 0; dy < ndays_r[lyr]; ++dy) {
                     double Rmx = -999.9, tmx = -999.0, tmn = 999.0;
                     std::vector<double> surfwet(24), radabs(24), soilmday(24);
@@ -857,7 +857,7 @@ struct Micro4Worker : public Worker {
                 int idxl = base + cols * rows * lyr;
                 tirstruct tir = twostreamdif(pai_v[idxl], paia_v[idxl], x_v[idxl], lref_v[idxl], ltra_v[idxl], clump_v[idxl], gref_m(i,j));
                 stompstruct stomp = stomparamsCpp(hgt_v[idxl], lats_m(i,j), x_v[idxl]);
-                tiwstruct tiw = windtiCpp(hgt_v[idxl], pai_v[idxl]);
+                tiwstruct tiw = windtiCpp(hgt_v[idxl], pai_v[idxl], zref);
                 for (int dy = 0; dy < ndays_r[lyr]; ++dy) {
                     double Rmx = -999.9, tmx = -999.0, tmn = 999.0;
                     std::vector<double> surfwet(24), radabs(24), soilmday(24);

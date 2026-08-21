@@ -355,12 +355,30 @@ double gfreeCpp(double leafd, double H)
     if (gha < 0.1) gha = 0.1;
     return gha;
 }
+// Lowest height at which the log-law wind/conductance profile is
+// considered valid for canopy of height h. Harman & Finnigan (2007,
+// Boundary-Layer Meteorol 123:339-363), Fig. 1 caption, citing
+// Garratt (1992): roughness-sublayer top z* observed at 1-2 canopy
+// heights above the canopy. We use the conservative (upper) end of
+// that observed range -- 2h above the canopy top, i.e. 3h total --
+// so the guard errs toward treating more of the profile as
+// RSL-contaminated rather than less. This is a documented
+// simplification of Harman & Finnigan's full stability-dependent
+// theory (their z* is not a hard cutoff but a smooth matching
+// height) chosen because a hard backstop, not a full RSL closure, is
+// what this codebase needs here.
+double zrefeffCpp(double zref, double h)
+{
+    double zrsl = 3.0 * h;   // h (canopy) + 2h (RSL extent, Garratt 1992 upper bound)
+    return (zref < zrsl) ? zrsl : zref;
+}
 // **  Calculate molar conductance above canopy ** //
 double gturbCpp(double uf, double d, double zm, double zref, double ph, double psi_h, double gmin)
 {
     double z0 = 0.2 * zm + d; // heat exchange surface height
     double ln = std::log((zref - d) / (z0 - d));
     double g = (ka * ph * uf) / (ln + psi_h);
+    if (!std::isfinite(g)) g = gmin;
     if (g < gmin) g = gmin;
     return g;
 }
@@ -784,7 +802,7 @@ Rcpp::List BigLeafCpp(DataFrame obstime, DataFrame climdata, std::vector<double>
             double RabsC = swabs.canopy[i] + radClw;
             // Calculate canopy temperature
             double zm = roughlengthCpp(h, pai, d, psih[i]);
-            uf[i] = (ka * wspeed[i]) / (std::log((zref - d) / zm) + psim[i]);
+            uf[i] = (ka * wspeed[i]) / (std::log((zrefeffCpp(zref, h) - d) / zm) + psim[i]);
             if (uf[i] < 0.0002) uf[i] = 0.0002;
             double gmin = gfreeCpp(leafd, std::abs(H[i])) * 2 * pai;
             double ph = phairCpp(tcc[i], pk[i]);
@@ -838,8 +856,8 @@ Rcpp::List BigLeafCpp(DataFrame obstime, DataFrame climdata, std::vector<double>
             psih[i] = dpsihCpp((0.2 * zm) / LL[i]) - dpsihCpp((zref - d) / LL[i]);
             phih[i] = dphihCpp((zref - d) / LL[i]);
             // Set limits to diabatic coefficients
-            double ln1 = std::log((zref - d) / zm);
-            double ln2 = std::log((zref - d) / (0.2 * zm));
+            double ln1 = std::log((zrefeffCpp(zref, h) - d) / zm);
+            double ln2 = std::log((zrefeffCpp(zref, h) - d) / (0.2 * zm));
             if (psim[i] < -0.9 * ln1) psim[i] = -0.9 * ln1;
             if (psih[i] < -0.9 * ln2) psih[i] = -0.9 * ln2;
             if (psim[i] > 0.9 * ln1) psim[i] = 0.9 * ln1;
@@ -1182,13 +1200,14 @@ radmodel2 twostreamCpp(double pai, double clump, double gref, double svfa, doubl
     out.zend = solp.zend;
     return out;
 }
-tiwstruct windtiCpp(double h, double pai)
+tiwstruct windtiCpp(double h, double pai, double zref)
 {
     tiwstruct out;
     out.d = zeroplanedisCpp(h, pai);
     out.zm = roughlengthCpp(h, pai, out.d, 0.0);
     if (out.zm < 1e-6) out.zm = 1e-6;
     out.a = pai / h;
+    out.zrefe = zrefeffCpp(zref, h);
     return out;
 }
 // ** Calculate wind speed (single value) ** //
@@ -1198,7 +1217,7 @@ windmodel windCpp(double reqhgt, double zref, double h, double pai, double uref,
     windmodel out;
     if (Rcpp::NumericVector::is_na(ws)) ws = 1.0;
     if (ws < 0.05) ws = 0.05;
-    double ufs = (ka * uref) / std::log((zref - tiw.d) / tiw.zm);
+    double ufs = (ka * uref) / std::log((tiw.zrefe - tiw.d) / tiw.zm);
     out.uf = ufs * umu * ws;
     if (out.uf < 0.001) out.uf = 0.001;
     out.uz = out.uf;
@@ -1219,7 +1238,7 @@ windmodel windCpp(double reqhgt, double zref, double h, double pai, double uref,
         if (out.uz > uref) out.uz = uref;
     }
     // Calculate gHa
-    out.gHa = gturbCpp(out.uf, tiw.d, tiw.zm, zref, 43, 0, 0.0001);
+    out.gHa = gturbCpp(out.uf, tiw.d, tiw.zm, tiw.zrefe, 43, 0, 0.0001);
     return out;
 }
 // Simple PenmanMonteith function
@@ -1307,7 +1326,7 @@ abovecanstruct TVabove(double reqhgt, double zref, double h, double d, double zm
     double estl = satvapCpp(T0);
     abovecanstruct out;
     if (reqhgt > (d + zh)) {
-        double lnr = log((reqhgt - d) / zh) / log((zref - d) / zh);
+        double lnr = log((reqhgt - d) / zh) / log((zrefeffCpp(zref, h) - d) / zh);
         out.Tz = tc + (T0 - tc) * (1 - lnr);
         out.ez = ea + (estl - ea) * surfwet * (1 - lnr);
     }
@@ -1732,7 +1751,7 @@ List windgrid(double reqhgt, List micro)
             if (!NumericVector::is_na(val)) {
                 for (int k = 0; k < tsteps; k++) {
                     int idx = i + rows * j + cols * rows * k;
-                    tiwstruct tiw = windtiCpp(h[idx], pai[idx]);
+                    tiwstruct tiw = windtiCpp(h[idx], pai[idx], zref);
                     windmodel wmod = windCpp(reqhgt, zref, h[idx], pai[idx], u2[idx], umu[idx], ws[idx], tiw);
                     uf[idx] = wmod.uf;
                     uz[idx] = wmod.uz;
@@ -1955,7 +1974,7 @@ List abovegrid(double reqhgt, List micro)
                     rvars.radLpar = radLpar[idx];
                     //rvars.lwout = lwout[idx];
                     rvars.zend = zen[idx] * 180.0 / pi;
-                    tiwstruct tiw = windtiCpp(hgt[idx], pai[idx]);
+                    tiwstruct tiw = windtiCpp(hgt[idx], pai[idx], zref);
                     wvars.uf = uf[idx];
                     wvars.uz = uz[idx];
                     wvars.gHa = gHa[idx];
@@ -2190,7 +2209,7 @@ List runmicro1Cpp(DataFrame obstime, DataFrame climdata, DataFrame pointm, List 
                 // Calculate variables that don't vary temporally
                 tirstruct tir = twostreamdif(pai(i, j), paia(i, j), x(i, j), lref(i, j), ltra(i, j), clump(i, j), gref(i, j));
                 stompstruct stomp = stomparamsCpp(hgt(i, j), lat, x(i, j));
-                tiwstruct tiw = windtiCpp(hgt(i, j), pai(i, j));
+                tiwstruct tiw = windtiCpp(hgt(i, j), pai(i, j), zref);
                 spa.Smax = Smax(i, j); spa.Smin = Smin(i, j); spa.soilb = soilb(i, j); spa.psi_e = Psie(i, j);
                 spa.Vq = Vq(i, j); spa.Vm = Vm(i, j); spa.Mc = Mc(i, j); spa.rho = rho(i, j);
                 soilstruct sp = soilpfun(Vm(i, j), Vq(i, j), Mc(i, j), rho(i, j));
@@ -2462,7 +2481,7 @@ List runmicro2Cpp(DataFrame obstime, List climdata, List pointm, List vegp, List
                 // Calculate variables that don't vary temporally
                 tirstruct tir = twostreamdif(pai(i, j), paia(i, j), x(i, j), lref(i, j), ltra(i, j), clump(i, j), gref(i, j));
                 stompstruct stomp = stomparamsCpp(hgt(i, j), lats(i, j), x(i, j));
-                tiwstruct tiw = windtiCpp(hgt(i, j), pai(i, j));
+                tiwstruct tiw = windtiCpp(hgt(i, j), pai(i, j), zref);
                 spa.Smax = Smax(i, j); spa.Smin = Smin(i, j); spa.soilb = soilb(i, j); spa.psi_e = Psie(i, j);
                 spa.Vq = Vq(i, j); spa.Vm = Vm(i, j); spa.Mc = Mc(i, j); spa.rho = rho(i, j);
                 soilstruct sp = soilpfun(Vm(i, j), Vq(i, j), Mc(i, j), rho(i, j));
@@ -2778,7 +2797,7 @@ List runmicro3Cpp(DataFrame dfsel, DataFrame obstime, DataFrame climdata, DataFr
                     // Calculate variables that don't vary temporally except by lyr
                     tirstruct tir = twostreamdif(pai[idxl], paia[idxl], x[idxl], lref[idxl], ltra[idxl], clump[idxl], gref(i, j));
                     stompstruct stomp = stomparamsCpp(hgt[idxl], lat, x[idxl]);
-                    tiwstruct tiw = windtiCpp(hgt[idxl], pai[idxl]);
+                    tiwstruct tiw = windtiCpp(hgt[idxl], pai[idxl], zref);
                     spa.Smax = Smax(i, j); spa.Smin = Smin(i, j); spa.soilb = soilb(i, j); spa.psi_e = Psie(i, j);
                     spa.Vq = Vq(i, j); spa.Vm = Vm(i, j); spa.Mc = Mc(i, j); spa.rho = rho(i, j);
                     soilstruct sp = soilpfun(Vm(i, j), Vq(i, j), Mc(i, j), rho(i, j));
@@ -3070,7 +3089,7 @@ List runmicro4Cpp(DataFrame dfsel, DataFrame obstime, List climdata, List pointm
                     // Calculate variables that don't vary temporally except by lyr
                     tirstruct tir = twostreamdif(pai[idxl], paia[idxl], x[idxl], lref[idxl], ltra[idxl], clump[idxl], gref(i, j));
                     stompstruct stomp = stomparamsCpp(hgt[idxl], lats(i, j), x[idxl]);
-                    tiwstruct tiw = windtiCpp(hgt[idxl], pai[idxl]);
+                    tiwstruct tiw = windtiCpp(hgt[idxl], pai[idxl], zref);
                     spa.Smax = Smax(i, j); spa.Smin = Smin(i, j); spa.soilb = soilb(i, j); spa.psi_e = Psie(i, j);
                     spa.Vq = Vq(i, j); spa.Vm = Vm(i, j); spa.Mc = Mc(i, j); spa.rho = rho(i, j);
                     soilstruct sp = soilpfun(Vm(i, j), Vq(i, j), Mc(i, j), rho(i, j));
@@ -3877,10 +3896,10 @@ snowmodpoint snowoneB(obspoint obstime, climpoint clim, vegpoint vegp, snowpoint
     if (zm < 0.0009) zm = 0.0009;
     out.hgt = hgt;
     out.pai = pai;
-    out.uf = (ka * clim.u2) / (std::log((other.zref - d) / zm) + other.psim);
+    out.uf = (ka * clim.u2) / (std::log((zrefeffCpp(other.zref, hgt) - d) / zm) + other.psim);
     out.uf = out.uf * umu;
     double ph = phairCpp(clim.tc, clim.pk);
-    out.gHa = gturbCpp(out.uf, d, zm, other.zref, ph, other.psih, 0.03);
+    out.gHa = gturbCpp(out.uf, d, zm, zrefeffCpp(other.zref, hgt), ph, other.psih, 0.03);
     // Calculate temperatures
     out.Tc = PenmanMonteithCpp(rad.RabsC, out.gHa, out.gHa, clim.tc, clim.te, clim.pk, clim.ea, 0.97, other.G, 1.0);
     out.Tg = PenmanMonteithCpp(RabsG, out.gHa, out.gHa, clim.tc, clim.te, clim.pk, clim.ea, 0.97, other.G, 1.0);
@@ -4137,8 +4156,8 @@ List pointmodelsnow(DataFrame obstime, DataFrame climdata, NumericVector vegp,
             phih[i] = dphihCpp((zref - d) / LL);
             // Set limits to diabatic coefficients
             double Belim = 0.4 / std::sqrt(0.003 + (0.2 * smod.pai) / 2.0);
-            double ln1 = std::log((zref - d) / zm);
-            double ln2 = std::log((zref - d) / (0.2 * zm));
+            double ln1 = std::log((zrefeffCpp(zref, smod.hgt) - d) / zm);
+            double ln2 = std::log((zrefeffCpp(zref, smod.hgt) - d) / (0.2 * zm));
             if (psim[i] < -0.9 * ln1) psim[i] = -0.9 * ln1;
             if (psih[i] < -0.9 * ln2) psih[i] = -0.9 * ln2;
             if (psim[i] > 0.9 * ln1) psim[i] = 0.9 * ln1;
@@ -4147,7 +4166,7 @@ List pointmodelsnow(DataFrame obstime, DataFrame climdata, NumericVector vegp,
             RswabsG[i] = smod.RswabsG;
             RlwabsG[i] = smod.RlwabsG;
             tr[i] = smod.tr;
-            double ufps = (0.4 * u2[i]) / std::log((zref - d) / zm);
+            double ufps = (0.4 * u2[i]) / std::log((zrefeffCpp(zref, smod.hgt) - d) / zm);
             umu[i] = smod.uf / ufps;
             te[i] = (Tc[i] + tc[i]) / 2.0;
             // Add melt
@@ -4829,7 +4848,7 @@ snowmicro snowabovepoint(double reqhgt, double zref, double tc, double relhum, d
     tiwstruct tiw;
     if (hgts > 0.0) {
         pais = pai * hgts / hgt;
-        tiw = windtiCpp(hgts, pais);
+        tiw = windtiCpp(hgts, pais, zref);
     }
     else {
         tiw.d = 0.0;
@@ -5383,7 +5402,7 @@ DataFrame pointmprocess(DataFrame pointvars, double zref, double h, double pai,
     std::vector<double> T0p(tsteps);
     for (int i = 0; i < tsteps; ++i) {
         // Calculate umu
-        double ufps = (ka * u2[i]) / std::log((zref - dp) / zmp);
+        double ufps = (ka * u2[i]) / std::log((zrefeffCpp(zref, h) - dp) / zmp);
         umu[i] = uf[i] / ufps;
         // Calculate conductivity
         double cs = (2400 * rho / 2.64 + 4180 * soilm[i]); // specific heat of soil in J / kg / K
@@ -5396,7 +5415,7 @@ DataFrame pointmprocess(DataFrame pointvars, double zref, double h, double pai,
         // Calculate DDp
         DDp[i] = std::pow(2.0 * ka / omdy, 0.5);
         // Calculate T0p
-        double gHa = (0.4 * 43.0 * ufps) / std::log((zref - dp) / zmp);
+        double gHa = (0.4 * 43.0 * ufps) / std::log((zrefeffCpp(zref, h) - dp) / zmp);
         double es = satvapCpp(tc[i]);
         double ea = es * rh[i] / 100.0;
         T0p[i] = PenmanMonteithCpp(RabsG[i], gHa, gHa, tc[i], tc[i], pk[i], ea, 0.97, 0.0, 1.0);
@@ -5956,7 +5975,7 @@ DataFrame microclimatemodel_wrapper(DataFrame obstime, DataFrame climdata, List 
         tiwstruct tiw;
         if (reqhgt > 0.0) {
             stomp = stomparamsCpp(hgt, lat, vegx);
-            tiw = windtiCpp(hgt, pai);
+            tiw = windtiCpp(hgt, pai, zref);
             dp = zeroplanedisCpp(hgt, pai);
             zmp = roughlengthCpp(hgt, pai, dp, 0);
         }
@@ -5979,7 +5998,7 @@ DataFrame microclimatemodel_wrapper(DataFrame obstime, DataFrame climdata, List 
             }
             else {
                 // Compute wind
-                double ufps = (ka * wspeed[i]) / std::log((zref - dp) / zmp);
+                double ufps = (ka * wspeed[i]) / std::log((zrefeffCpp(zref, hgt) - dp) / zmp);
                 double umu = uf[i] / ufps;
                 windmodel wvars = windCpp(reqhgt, zref, hgt, pai, wspeed[i], umu, 1.0, tiw);
                 uz[i] = wvars.uz;

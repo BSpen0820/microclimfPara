@@ -2002,7 +2002,7 @@ flowacc<-function (dtm, basins = NA) {
       tme<-as.POSIXlt(weather[[i]]$obs_time,tz="UTC")
       tmeorig<-onepoint$tmeorig
       subs<-onepoint$subs
-      zre<-onepoint$zref
+      zref<-onepoint$zref
       mat[i]<-onepoint$matemp
       if (class(onepoint$Tbz) != "logical") {
         Tbz[[i]]<-data.frame(Tbz=onepoint$Tbz)
@@ -2578,11 +2578,11 @@ flowacc<-function (dtm, basins = NA) {
     weather$windspeed<-weather$windspeed*log(67.8*zref-5.42)/log(67.8*windhgt-5.42)
   }
   # =========== Perform height adjustment if necessary ===================== #
-  if (max(.is(vegp$hgt),na.rm=TRUE) > zref) {
+  zout<-max(2, 3*max(.is(vegp$hgt),na.rm=TRUE))
+  if (zout > zref) {
     tme<-as.POSIXlt(weather$obs_time,tz="UTC")
     obstime<-data.frame(year=tme$year+1900,month=tme$mon+1,day=tme$mday,
                         hour=tme$hour+tme$min/60+tme$sec/3600)
-    zout<-max(.is(vegp$hgt))
     ll<-.latlongfromraster(dtm)
     tst<-1
     ctr<-0
@@ -2716,11 +2716,11 @@ flowacc<-function (dtm, basins = NA) {
     weather$windspeed<-weather$windspeed*log(67.8*zref-5.42)/log(67.8*windhgt-5.42)
   }
   # =========== Perform height adjustment if necessary ===================== #
-  if (max(.is(vegp$hgt),na.rm=TRUE) > zref) {
+  zout<-max(2, 3*max(.is(vegp$hgt),na.rm=TRUE))
+  if (zout > zref) {
     tme<-as.POSIXlt(weather$obs_time,tz="UTC")
     obstime<-data.frame(year=tme$year+1900,month=tme$mon+1,day=tme$mday,
                         hour=tme$hour+tme$min/60+tme$sec/3600)
-    zout<-max(.is(vegp$hgt))
     ll<-.latlongfromraster(dtm)
     tst<-1
     ctr<-0
@@ -2893,6 +2893,13 @@ flowacc<-function (dtm, basins = NA) {
   pointms<-list()
   clims<-list()
   mxhgt<-max(.is(vegp$hgt),na.rm=T)
+  # Hoisted once per tile (not per cell) -- fixes loop-carried zref
+  # corruption (D2) and applies the same 3*h RSL-lift rule as
+  # Cppwrappers.R:95 (Fix 1, sec 1.4).
+  zout<-max(2, 3*mxhgt)
+  dolift<-zout > zref
+  wsfactor<-if (zref != windhgt) log(67.8*zref-5.42)/log(67.8*windhgt-5.42) else 1
+  zrefu<-if (dolift) zout else zref
   if (class(dtmc) == "logical") {
     rte<-weather$temp[[1]]
     af<-res(rte)[1]/res(dtm)[1]
@@ -2910,29 +2917,28 @@ flowacc<-function (dtm, basins = NA) {
       if (is.na(climdf$temp[1]) == FALSE & is.na(.is(vegpc$hgt)[i,j]) == FALSE) {
         # ======== Perform wind height adjustment if necessary ============== #
         if (zref != windhgt) {
-          climdf$windspeed<-climdf$windspeed*log(67.8*zref-5.42)/log(67.8*windhgt-5.42)
+          climdf$windspeed<-climdf$windspeed*wsfactor
         }
         # =========== Perform height adjustment if necessary ================ #
         obstime<-data.frame(year=tme$year+1900,month=tme$mon+1,day=tme$mday,
                             hour=tme$hour+tme$min/60+tme$sec/3600)
-        if (mxhgt > zref) {
+        if (dolift) {
           tst<-1
           ctr<-0
           while (tst > 0) {
-            weather2<-weatherhgtCpp(obstime,climdf,zref,zref,mxhgt,ll$lats[i,j],ll$lons[i,j])
+            weather2<-weatherhgtCpp(obstime,climdf,zref,zref,zout,ll$lats[i,j],ll$lons[i,j])
             tt<-mean(weather2$temp)
             if (is.na(tt) == FALSE) tst<-0
             ctr<-ctr+1
             if (ctr > 5) tst<-0
           }
           climdf<-weather2
-          climdfr$obs_time<-as.POSIXlt(tme)
-          zref<-mxhgt
+          climdf$obs_time<-as.POSIXlt(tme)
         } # end height adjust
         # ============ Get variables for pointmodel =========== ============== #
         vegpp<-.tovp(vegpc,i,j)
         vegpp<-c(vegpp[2],vegpp[1],vegpp[6],vegpp[4])
-        other<-c(0,0,ll$lats[i,j],ll$lons[i,j],zref,snowinitd,snowinita)
+        other<-c(0,0,ll$lats[i,j],ll$lons[i,j],zrefu,snowinitd,snowinita)
         # ========== Run point model and convert to input data.frame ========= #
         pmod<-pointmodelsnow(obstime,climdf,vegpp,other,snowenv,maxiter=10)
         pointms[[k]]<-data.frame(Gp=pmod$G,Tc=pmod$Tc,RswabsG=pmod$RswabsG,
@@ -3138,6 +3144,13 @@ flowacc<-function (dtm, basins = NA) {
   pointms2<-list()
   clims<-list()
   mxhgt<-max(.is(vegp$hgt),na.rm=T)
+  # Hoisted once per tile (not per cell) -- fixes loop-carried zref
+  # corruption (D2) and applies the same 3*h RSL-lift rule as
+  # Cppwrappers.R:95 (Fix 1, sec 1.4).
+  zout<-max(2, 3*mxhgt)
+  dolift<-zout > zref
+  wsfactor<-if (zref != windhgt) log(67.8*zref-5.42)/log(67.8*windhgt-5.42) else 1
+  zrefu<-if (dolift) zout else zref
   if (class(dtmc) == "logical" || dtmc == 0) {
     rte<-weather$temp[[1]]
     af<-res(rte)[1]/res(dtm)[1]
@@ -3157,27 +3170,26 @@ flowacc<-function (dtm, basins = NA) {
       if (is.na(climdf$temp[1]) == FALSE & is.na(.is(vegpc$hgt)[i,j]) == FALSE) {
         # ======== Perform wind height adjustment if necessary ============== #
         if (zref != windhgt) {
-          climdf$windspeed<-climdf$windspeed*log(67.8*zref-5.42)/log(67.8*windhgt-5.42)
+          climdf$windspeed<-climdf$windspeed*wsfactor
         }
         # =========== Perform height adjustment if necessary ================ #
         obstime<-data.frame(year=tme$year+1900,month=tme$mon+1,day=tme$mday,
                             hour=tme$hour+tme$min/60+tme$sec/3600)
-        if (mxhgt > zref) {
+        if (dolift) {
           tst<-1
           ctr<-0
           while (tst > 0) {
-            weather2<-weatherhgtCpp(obstime,climdf,zref,zref,mxhgt,ll$lats[i,j],ll$lons[i,j])
+            weather2<-weatherhgtCpp(obstime,climdf,zref,zref,zout,ll$lats[i,j],ll$lons[i,j])
             tt<-mean(weather2$temp)
             if (is.na(tt) == FALSE) tst<-0
             ctr<-ctr+1
             if (ctr > 5) tst<-0
           }
           climdf<-weather2
-          climdfr$obs_time<-as.POSIXlt(tme)
-          zref<-mxhgt
+          climdf$obs_time<-as.POSIXlt(tme)
         } # end height adjust
         # ============ Get variables for pointmodel =========== ============== #
-        other<-c(0,0,ll$lats[i,j],ll$lons[i,j],zref,snowinitd,snowinita)
+        other<-c(0,0,ll$lats[i,j],ll$lons[i,j],zrefu,snowinitd,snowinita)
         # ========== Run point model and convert to input data.frame ========= #
         pmod<-pointmodelsnow(obstime,climdf,vegpp,other,snowenv,maxiter=10)
         s<-c(1:length(climdf$temp))+1
