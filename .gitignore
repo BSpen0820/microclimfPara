@@ -13,10 +13,18 @@ src/*.a
 # Development / planning documents
 CLAUDE.md
 Code_review_report.md
-Parallelisation_plan.md
-Validation_test/
-ClaudeTest_Validation/
+.claude/
+
+# Validation data (large, regenerable baselines/outputs) — validation
+# *scripts* under Validation_test/ and ClaudeTest_Validation/ stay tracked
+Validation_test/base/
+Validation_test/*.vrt
+Validation_test/.Rhistory
+ClaudeTest_Validation/revalidation_results/
 test/Base_Results/
 test/MicroPar_Ser/
 test/MicroPar_Par/
-.claude/
+test/Validation_memfix_run.log
+test/Validation_Results.csv
+test/mem_compare_results.csv
+Validation_memfix_results.csv
