@@ -16,10 +16,7 @@ Code_review_report.md
 .claude/
 
 # Validation data (large, regenerable baselines/outputs) — validation
-# *scripts* under Validation_test/ and ClaudeTest_Validation/ stay tracked
-Validation_test/base/
-Validation_test/*.vrt
-Validation_test/.Rhistory
+# *scripts* under ClaudeTest_Validation/ stay tracked
 ClaudeTest_Validation/revalidation_results/
 test/Base_Results/
 test/MicroPar_Ser/

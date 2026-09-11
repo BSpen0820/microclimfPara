@@ -5,8 +5,6 @@
 ^\.RData$
 ^CLAUDE\.md$
 ^Code_review_report\.md$
-^Parallelisation_plan\.md$
-^Validation_test/
 ^ClaudeTest_Validation/
 ^test/
 ^\.claude/

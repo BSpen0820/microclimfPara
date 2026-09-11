@@ -26,7 +26,7 @@ climarrayr <- list(
   precip = .ta(climdata$precip, dtm))
 tme  <- as.POSIXlt(climdata$obs_time, tz = "UTC")
 dtmc <- aggregate(dtm, 10, fun = "mean", na.rm = TRUE)
-micropointa <- readRDS("Validation_test/base/micropointa.rds")
+micropointa <- runpointmodela(climarrayr, tme, reqhgt = 0.05, dtm, vegp, soilc)
 
 # Reuse one smod across both runs (runsnowmodel is unaffected by the changes)
 smod_cache <- "test/.smod_cache.rds"
