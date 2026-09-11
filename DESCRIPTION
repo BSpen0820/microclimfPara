@@ -1,20 +1,13 @@
 Package: microclimfPara
 Type: Package
-Title: microclimfPara: Fast above, below or within canopy gridded microclimate modelling with parallelization
-Version: 2.0.5
+Title: microclimfPara: Fast above, below or within canopy gridded microclimate modeling with parallelization, based on work of Maclean 2026 'microclimf' 
+Version: 2.1.0
 Authors@R: c(
-    person("Bryan", "Spencer", email = "bspencer@uidaho.edu", role = "cre"))
+    person("Bryan", "Spencer", email = "bspencer@uidaho.edu", role = "ctb"))
 Maintainer: B. D. Spencer <bspencer@uidaho.edu>
-Description: The functions in the microclimfPara package contain tools for 
-    fast modelling of the mechanistic processes that govern below or above canopy
-    microclimate on gridded data. It builds on the microclima and microclimc packages, but 
-    contains all the functions needed to run the model in isolation, with no other 
-    microclimate package dependancies. A simplified means of estimating soil temperatures is 
-    included, eliminating the need to run the model in time-steps. In consequences calculations
-    are performed simultaniously on all grid cells and over all time-increments. The models
-    can be run either in hourly or in daily time-increments, the latter quicker with with lower
-    memory requirements. In interpolation method to derive hourly estimates from daily data is 
-    also included.
+Description: The functions in the microclimfPara package are based on the work of Maclean (2026) R package 'microclimf' and 
+    are designed to run in parallel on gridded data. The package contains minor bug fixes, memory conserving improvements, and changes such as an option to 
+    disable the subnivian routine. Parallelization was implemented via RcppParallel, and validated against the orignal microclimf pacakge.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
