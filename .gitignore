@@ -21,7 +21,3 @@ ClaudeTest_Validation/revalidation_results/
 test/Base_Results/
 test/MicroPar_Ser/
 test/MicroPar_Par/
-test/Validation_memfix_run.log
-test/Validation_Results.csv
-test/mem_compare_results.csv
-Validation_memfix_results.csv

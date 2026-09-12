@@ -1,4 +1,4 @@
-# Validation_snow_wiring_consistency.R
+# 05_snow_wiring_consistency.R
 # End-to-end serial vs parallel consistency check for the new Tgref/snowdays
 # plumbing threaded through .runmicrosnow1() (data.frame climate) ->
 # gridmicrosnow1()/gridmicrosnow1Par(). Uses the package's own bundled
@@ -11,7 +11,7 @@
 # directly while designing this test - a pre-existing bug unrelated to this
 # change, out of scope for this plan). Use the full, uncropped 50x50
 # dtmcaerth grid, which is confirmed to run in a few seconds.
-# Run from the package root: Rscript test/Validation_snow_wiring_consistency.R
+# Run from the package root: Rscript test/05_snow_wiring_consistency.R
 
 library(microclimfPara)
 library(terra)

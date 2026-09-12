@@ -1,5 +1,19 @@
-remove.packages("microclimf")
-remove.packages("microclimfPara")
+# 01_original_vs_fork.R
+# Installs the original ilyamaclean/microclimf, runs the point/grid/snow
+# models, then installs this fork (BSpen0820/microclimfPara) and runs the
+# same inputs both serial and parallel — saving all three outputs
+# (Base_Results/, MicroPar_Ser/, MicroPar_Par/) for comparison in
+# 02_compare_results.R.
+#
+# NOTE: installs microclimfPara from GitHub (pak::pkg_install), not the
+# local working copy — validates whatever's pushed, not uncommitted changes.
+# Run from the test/ directory (not the package root) — it writes its
+# output folders relative to the current working directory.
+#
+# Run: cd test; Rscript 01_original_vs_fork.R
+
+if ("microclimf" %in% rownames(installed.packages())) remove.packages("microclimf")
+if ("microclimfPara" %in% rownames(installed.packages())) remove.packages("microclimfPara")
 
 pak::pak_cleanup(force = TRUE)
 

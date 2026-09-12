@@ -1,11 +1,11 @@
-# Validation_build_snow_Tgref.R
+# 03_snow_tgref_build.R
 # Correctness check for .build_snow_Tgref() (R/internal.R): the R-level
 # assembly step that builds a full-year, NA-free reference series for
 # snowdaymov() to smooth. Splices Tg (snow-surface skin temperature) onto
 # snowdays/mixed-day hours and moutn$Tz (the no-snow model's own below-ground
 # prediction) onto pure-nosnow-day hours, then fills any remaining NA hour
 # by linear interpolation from that pixel's own nearest valid hours.
-# Run from the package root: Rscript test/Validation_build_snow_Tgref.R
+# Run from the package root: Rscript test/03_snow_tgref_build.R
 
 library(microclimfPara)
 

@@ -1,12 +1,12 @@
-# Validation_snowdaymov.R
+# 04_snow_daymov.R
 # Correctness check for the redesigned snowdaymov(): confirms it applies the
 # same depth-dependent trailing rolling window as the no-snow model's own
 # Tbelowgroundv() "complete" case (n = round(nb), manCpp(Tg, n) - see
 # src/microclimfCpp.cpp), operating on a full-year, NA-free reference series
 # built by .build_snow_Tgref() (R/internal.R, see
-# test/Validation_build_snow_Tgref.R for that function's own tests), then
+# test/03_snow_tgref_build.R for that function's own tests), then
 # slices the smoothed result down to just the requested snowdays hours.
-# Run from the package root: Rscript test/Validation_snowdaymov.R
+# Run from the package root: Rscript test/04_snow_daymov.R
 
 library(microclimfPara)
 

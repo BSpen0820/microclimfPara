@@ -3,7 +3,7 @@ Type: Package
 Title: microclimfPara: Fast above, below or within canopy gridded microclimate modeling with parallelization, based on work of Maclean 2026 'microclimf' 
 Version: 2.1.0
 Authors@R: c(
-    person("Bryan", "Spencer", email = "bspencer@uidaho.edu", role = "ctb"))
+    person("Bryan", "Spencer", email = "bspencer@uidaho.edu", role = c("ctb", "cre")))
 Maintainer: B. D. Spencer <bspencer@uidaho.edu>
 Description: The functions in the microclimfPara package are based on the work of Maclean (2026) R package 'microclimf' and 
     are designed to run in parallel on gridded data. The package contains minor bug fixes, memory conserving improvements, and changes such as an option to 
