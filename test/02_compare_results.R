@@ -129,6 +129,48 @@ compare_variable <- function(base_val, fork_val) {
   )
 }
 
+# For variables with a confirmed, already-investigated cause of divergence,
+# record it directly in the CSV -- both which known bug/fix is responsible,
+# and which package's values are the physically reasonable ones. Without
+# this, a reviewer skimming max_abs_diff in isolation (e.g. Tz off by 21
+# degC, Tg off by 76 degC) has no way to tell that's a rare, understood,
+# already-fixed artifact rather than a red flag. See test/README.md for the
+# full investigation and the percentile breakdown showing how rare these are.
+note_for_variable <- function(name, variable) {
+  radiation_cascade_vars <- c("Tz", "tleaf", "relhum", "Rdirdown", "Rdifdown", "Rlwdown", "Rswup", "Rlwup")
+  snow_regime_vars <- c("Tg", "Tc", "groundsnowdepth", "totalSWE")
+  if (name %in% c("mout_nosnow", "mout_snow") && variable %in% radiation_cascade_vars) {
+    return(paste(
+      "Confirmed bug in original microclimf, already fixed in this fork: at near-horizon",
+      "(sunrise/sunset) sun angles, direct-beam radiation is amplified without bound",
+      "(dividing by cos(zenith) near 0). Worked example -- 2017-10-06 07:00 UTC, grid cell",
+      "row 4/col 33: actual weather input that hour was swdown=62.5 W/m^2 total and",
+      "temp=9.4 degC. Original microclimf reports Rdirdown=815.9 W/m^2 there (direct beam",
+      "ALONE exceeding total incoming shortwave by 13x -- not physically possible) and",
+      "predicts Tz=30.7 degC; microclimfPara reports Rdirdown=0 W/m^2 and predicts",
+      "Tz=9.5 degC, matching the actual 9.4 degC air temperature that hour. This affects",
+      "only 70 of 20,778,720 compared Tz cell-hours (0.00034%) by more than 10 degC; 99.99%",
+      "agree within 1 degC. See test/README.md, 'Why some values differ from the original'."
+    ))
+  }
+  if (name == "smod_snow" && variable %in% snow_regime_vars) {
+    return(paste(
+      "Confirmed bug in original microclimf, already fixed in this fork: groundsnowdepth",
+      "and totalSWE are tracked as independent state and can become inconsistent. Worked",
+      "example -- 2017-05-24 12:00 UTC (full sun), grid cell row 39/col 4: original",
+      "microclimf's groundsnowdepth reads exactly 0.0000 while its own totalSWE still shows",
+      "~4.0 units of snow water equivalent at the SAME timestep -- internally inconsistent.",
+      "That triggers a spurious bare-ground regime switch: original predicts Tg=76.2 degC",
+      "(physically implausible for any ground surface) while microclimfPara -- whose",
+      "groundsnowdepth stays a small positive 0.021 there, consistent with its totalSWE --",
+      "predicts Tg=0.0 degC. This fork's depth-blended regime switch (commit c070816) avoids",
+      "the spurious switch -- microclimfPara's values are the physically reasonable ones",
+      "here. See test/README.md."
+    ))
+  }
+  ""
+}
+
 group_names <- c("mout_nosnow", "mout_snow", "smod_snow")
 compare_dirs <- c("MicroPar_Ser", "MicroPar_Par")
 byvar_rows <- list()
@@ -149,6 +191,7 @@ for (nm in group_names) {
       res$name <- nm
       res$dir <- d
       res$variable <- var
+      res$note <- note_for_variable(nm, var)
       byvar_rows[[length(byvar_rows) + 1]] <- res
     }
 
@@ -163,7 +206,8 @@ for (nm in group_names) {
 byvar.df <- do.call(rbind, byvar_rows)
 byvar.df <- byvar.df[, c("name", "dir", "variable", "n_total", "n_na_base", "n_na_fork",
                           "na_mismatch", "n_compared", "exact_match",
-                          "mean_abs_diff", "median_abs_diff", "max_abs_diff", "median_rel_diff_pct")]
+                          "mean_abs_diff", "median_abs_diff", "max_abs_diff", "median_rel_diff_pct",
+                          "note")]
 
 write.csv(byvar.df, "Validation_Results_byvariable.csv", row.names = FALSE)
 cat("\n=== Part 2: per-variable comparison, fork vs. original microclimf (Validation_Results_byvariable.csv) ===\n")

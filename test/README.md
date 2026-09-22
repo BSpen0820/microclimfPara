@@ -99,6 +99,62 @@ Three known, expected sources explain this pattern:
   only affects `MicroPar_Par` vs. `MicroPar_Ser`, not the comparison against
   `Base_Results`.
 
+### Is the largest `max_abs_diff` a bug in this fork?
+
+No — investigated case by case (2026-09-22), the largest outliers are
+confirmed bugs in the **original** `microclimf`, already fixed in this fork.
+`microclimfPara`'s values are the physically reasonable ones:
+
+- **Radiation/temperature (`mout_nosnow`/`mout_snow`, up to `Tz` 21–56 degC,
+  `tleaf` 34–51 degC, `relhum` 59–67 pts, radiation fields up to ~1009–1352
+  W/m²).** At the worst `mout_nosnow$Tz` cell/hour (2017-10-06 07:00,
+  near sunrise), total incoming shortwave (`swdown`) was only 62.5 W/m², yet
+  the *original* reports `Rdirdown` (direct beam alone) of 743–816 W/m² —
+  over 12x the total energy that arrived, which violates energy conservation
+  and is not physically possible. `microclimfPara` correctly reports
+  `Rdirdown = 0` there (the already-documented near-horizon
+  `cos(zenith) < 0.065` amplification bug — see "Direct-beam radiation fix"
+  in `CLAUDE.md`), and its `Tz` of ~9.49 degC sits almost exactly on the raw
+  ambient air temperature for that hour (9.448 degC) — exactly what's
+  expected right after sunrise with genuinely weak sun. The affected cells
+  cluster in one interior patch of the terrain (rows 2–13, columns 27–34 of
+  the 50x50 grid — not the domain edge), consistent with a slope/aspect/
+  horizon-shading combination that's more prone to the near-horizon
+  division-by-~0 that causes the bug.
+- **Snow ground temperature (`smod_snow$Tg` up to 76 degC, `Tc` up to
+  14 degC, `totalSWE`/`groundsnowdepth`).** At the worst `Tg` cell/hour
+  (2017-05-24 noon, full sun), the *original*'s `groundsnowdepth` reads
+  exactly `0.0000` while its own `totalSWE` still shows ~5.4 units of snow
+  water equivalent at the same timestep — an internal contradiction, since
+  `groundsnowdepth` and `totalSWE` are tracked as independent state in the
+  snow model and can drift apart. That triggers a spurious full bare-ground
+  regime switch, and the *original*'s ground temperature spikes to a
+  physically implausible 76 degC in bright May sun before decaying back
+  over several hours. `microclimfPara`'s depth-proportional regime blending
+  (commit `c070816`, "Fix snow-covered below-ground staircase and unblended
+  regime switch") avoids this; its `Tg` stays a sane, flat `0.000` degC
+  throughout.
+
+**How rare is this?** Out of 20,778,720 compared `mout_nosnow$Tz` cell-hours:
+
+| Percentile | Abs. difference |
+|---|---|
+| 50% (median) | ~0 (machine precision) |
+| 90% | 0.000005 degC |
+| 99% | 0.0003 degC |
+| 99.9% | 0.03 degC |
+| 99.99% | 0.81 degC |
+| 99.999% | 5.7 degC |
+| 100% (max) | 21.2 degC |
+
+Only 70 of those 20,778,720 cell-hours (0.00034%) differ by more than 10
+degC, all tied to the same near-horizon radiation bug. 99.99% of the grid
+agrees with the original to within a degree.
+
+`Validation_Results_byvariable.csv`'s `note` column flags every variable
+row where a specific cause has been investigated and confirmed, so the raw
+`max_abs_diff`/`mean_abs_diff` numbers aren't read in isolation.
+
 ## Track 2: snow ground-temperature smoothing correctness
 
 ### The problem
