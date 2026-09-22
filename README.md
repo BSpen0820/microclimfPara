@@ -4,7 +4,9 @@ Fast, mechanistic microclimate modelling above, below, or within vegetation
 canopies on gridded spatial data — built on
 [`microclimf`](https://github.com/ilyamaclean/microclimf) (Maclean 2026),
 with parallelisation and a number of bug fixes and memory-conservation
-improvements layered on top.
+improvements layered on top. This fork is built off of `microclimf`
+version 2.0.0, commit
+[`60e70f6`](https://github.com/ilyamaclean/microclimf/commit/60e70f6).
 
 ## Installation
 
