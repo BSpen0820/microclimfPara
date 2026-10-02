@@ -897,7 +897,7 @@ vegpfromhab <- function(habitats, hgts = NA, pai = NA, lat = NA, long = NA, tme 
     h_latlong <- project(habitats, "EPSG:4326")
     e <- ext(h_latlong)
     lat <- (e$ymin + e$ymax) / 2
-    long <- (e$ymin + e$ymax) / 2
+    long <- (e$xmin + e$xmax) / 2
   }
   if (class(tme)[1] == "logical") {
     current_year <- as.numeric(format(Sys.time(), "%Y"))
@@ -908,8 +908,11 @@ vegpfromhab <- function(habitats, hgts = NA, pai = NA, lat = NA, long = NA, tme 
   m<-.is(habitats)
   uh<-unique(as.vector(m))
   uh<-uh[is.na(uh)==F]
+  # Was pai supplied? (must be recorded before pai is replaced by an array below)
+  pai_est <- class(pai)[1] == "logical"
+  if (class(pai)[1] == "PackedSpatRaster") pai<-rast(pai)
   # Create blank array for pai
-  if (class(pai)[1] == "logical") {
+  if (pai_est) {
     paii<-.paifromhabitat(1, lat, long, tme)
     pai<-array(NA,dim=c(dim(m),length(paii)))
   }
@@ -917,7 +920,7 @@ vegpfromhab <- function(habitats, hgts = NA, pai = NA, lat = NA, long = NA, tme 
   x<-m; gsmax<-m; leafr<-m; leafd<-m; hgt<-m
   for (i in uh) {
     sel<-which(m==i)
-    if (class(pai)[1] == "logical") {
+    if (pai_est) {
       paii<-.paifromhabitat(i, lat, long, tme)
       pai<-.poparray(pai,sel,paii)
     }
@@ -928,11 +931,18 @@ vegpfromhab <- function(habitats, hgts = NA, pai = NA, lat = NA, long = NA, tme 
     leafd[sel]<-vegi$leafd
     hgt[sel]<-vegi$hgt
   }
-  clump<-pai*0
-  pai<-.rast(pai,habitats)
+  # pai as a 3D array; a user-supplied SpatRaster is kept as is
+  # (.rast() on a SpatRaster would return an empty raster)
+  if (class(pai)[1] == "SpatRaster") {
+    paia<-as.array(pai)
+  } else {
+    paia<-pai
+    pai<-.rast(paia,habitats)
+  }
+  clump<-paia*0
   leaft<-0.5*leafr
   if (clump0 == F) {
-    for (i in 1:dim(pai)[3]) clump[,,i]<-clumpestimate(hgt, leafd, .is(pai)[,,i])
+    for (i in 1:dim(paia)[3]) clump[,,i]<-clumpestimate(hgt, leafd, paia[,,i])
   }
   clump <- .rast(clump,habitats)
   # Convert to rasters
